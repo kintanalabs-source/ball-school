@@ -63,6 +63,8 @@ const Students = () => {
     loadClasses(); // Reload classes when opening modal
     setIsModalOpen(true);
   };
+  
+  const handleSubmit = (e) => {
     e.preventDefault();
     const service = isEditing 
         ? StudentService.update(selectedStudent.id, formData) 
