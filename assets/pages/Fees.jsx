@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { FeeService, StudentService } from '../utils/api';
 import { config } from '../utils/config';
-import { Search, CheckCircle, Clock } from 'lucide-react';
+import { Search, CheckCircle, Clock, CreditCard } from 'lucide-react';
 
 const Fees = () => {
+  const currentMonthFr = [
+    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+  ][new Date().getMonth()];
+
   const [filter, setFilter] = useState('unpaid');
-  const [selectedMonth, setSelectedMonth] = useState('Avril');
+  const [selectedMonth, setSelectedMonth] = useState(currentMonthFr);
   const [fees, setFees] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedFees, setSelectedFees] = useState([]);
 
   const loadFees = () => {
     setLoading(true);
@@ -17,8 +23,9 @@ const Fees = () => {
     }
     FeeService.getAll(params)
       .then(res => {
-        setFees(res.data['hydra:member'] || []);
+        setFees(res.data['member'] || res.data['hydra:member'] || []);
         setLoading(false);
+        setSelectedFees([]); // Reset selection on reload
       })
       .catch(err => {
         console.error(err);
@@ -30,8 +37,35 @@ const Fees = () => {
     loadFees();
   }, [filter, selectedMonth]);
 
+  const toggleSelect = (id) => {
+    setSelectedFees(prev => 
+      prev.includes(id) ? prev.filter(fid => fid !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    const unpaidInView = fees.filter(f => !f.isPaid).map(f => f.id);
+    if (selectedFees.length === unpaidInView.length && unpaidInView.length > 0) {
+      setSelectedFees([]);
+    } else {
+      setSelectedFees(unpaidInView);
+    }
+  };
+
+  const handleBulkPay = () => {
+    if (selectedFees.length === 0) return;
+    
+    if (window.confirm(`Confirmer le paiement de ${selectedFees.length} écolage(s) ?`)) {
+      FeeService.pay(selectedFees)
+        .then(() => {
+          loadFees();
+        })
+        .catch(err => console.error(err));
+    }
+  };
+
   const handleMarkAsPaid = (id) => {
-    FeeService.markAsPaid(id).then(() => loadFees());
+    FeeService.pay([id]).then(() => loadFees());
   };
 
   return (
@@ -65,6 +99,16 @@ const Fees = () => {
         </div>
 
         <div className="flex items-center gap-4">
+          {selectedFees.length > 0 && (
+            <button
+              onClick={handleBulkPay}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all animate-in fade-in zoom-in duration-200"
+            >
+              <CreditCard size={18} />
+              Payer ({selectedFees.length})
+            </button>
+          )}
+
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
@@ -89,6 +133,14 @@ const Fees = () => {
         <table className="w-full text-left">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
+              <th className="px-6 py-4 w-10">
+                <input 
+                  type="checkbox" 
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  checked={fees.length > 0 && fees.filter(f => !f.isPaid).every(f => selectedFees.includes(f.id))}
+                  onChange={toggleSelectAll}
+                />
+              </th>
               <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Élève</th>
               <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Montant</th>
               <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Période</th>
@@ -98,7 +150,17 @@ const Fees = () => {
           </thead>
           <tbody className="divide-y divide-gray-50">
             {fees.map((fee) => (
-              <tr key={fee.id}>
+              <tr key={fee.id} className={selectedFees.includes(fee.id) ? 'bg-blue-50/30' : ''}>
+                <td className="px-6 py-4">
+                  {!fee.isPaid && (
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      checked={selectedFees.includes(fee.id)}
+                      onChange={() => toggleSelect(fee.id)}
+                    />
+                  )}
+                </td>
                 <td className="px-6 py-4 font-semibold text-gray-800">
                     {fee.student ? `${fee.student.firstName} ${fee.student.lastName}` : 'N/A'}
                 </td>

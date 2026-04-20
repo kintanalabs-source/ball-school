@@ -19,7 +19,7 @@ const News = () => {
     setLoading(true);
     NewsService.getAll()
       .then(res => {
-        setNews(res.data['hydra:member'] || []);
+        setNews(res.data['member'] || res.data['hydra:member'] || []);
         setLoading(false);
       })
       .catch(err => {

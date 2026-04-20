@@ -41,17 +41,17 @@ const Dashboard = () => {
 
   useEffect(() => {
     // In a real app we would have a dedicated stats endpoint
-    StudentService.getAll().then(res => setStats(s => ({...s, students: res.data['hydra:totalItems']})));
+    StudentService.getAll().then(res => setStats(s => ({...s, students: res.data['totalItems'] || res.data['hydra:totalItems']})));
     AccountingService.getAll().then(res => {
-        const movs = res.data['hydra:member'] || [];
+        const movs = res.data['member'] || res.data['hydra:member'] || [];
         const entries = movs.filter(m => m.type === 'entry').reduce((acc, curr) => acc + curr.amount, 0);
         const exits = movs.filter(m => m.type === 'exit').reduce((acc, curr) => acc + curr.amount, 0);
         setStats(s => ({...s, entries, exits}));
     });
-    FeeService.getAll({ isPaid: false }).then(res => setStats(s => ({...s, unpaid: res.data['hydra:totalItems']})));
+    FeeService.getAll({ isPaid: false }).then(res => setStats(s => ({...s, unpaid: res.data['totalItems'] || res.data['hydra:totalItems']})));
 
-    FeeService.getAll({ isPaid: true }).then(res => setRecentFees(res.data['hydra:member']?.slice(0, 4) || []));
-    NewsService.getAll().then(res => setRecentNews(res.data['hydra:member']?.slice(0, 3) || []));
+    FeeService.getAll({ isPaid: true }).then(res => setRecentFees((res.data['member'] || res.data['hydra:member'])?.slice(0, 4) || []));
+    NewsService.getAll().then(res => setRecentNews((res.data['member'] || res.data['hydra:member'])?.slice(0, 3) || []));
   }, []);
 
   return (

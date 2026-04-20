@@ -19,7 +19,7 @@ const Accounting = () => {
     setLoading(true);
     AccountingService.getAll()
       .then(res => {
-        setMovements(res.data['hydra:member'] || []);
+        setMovements(res.data['member'] || []);
         setLoading(false);
       })
       .catch(err => {

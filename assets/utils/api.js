@@ -2,14 +2,31 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: '/api',
+  headers: {
+    'Accept': 'application/ld+json',
+    'Content-Type': 'application/json'
+  }
 });
 
 export const StudentService = {
   getAll: () => api.get('/students'),
   get: (id) => api.get(`/students/${id}`),
   create: (data) => api.post('/students', data),
-  update: (id, data) => api.put(`/students/${id}`, data),
+  update: (id, data) => api.patch(`/students/${id}`, data, {
+    headers: { 'Content-Type': 'application/merge-patch+json' }
+  }),
   delete: (id) => api.delete(`/students/${id}`),
+  generateYearFees: (id) => api.post(`/students/${id}/generate-year-fees`),
+};
+
+export const ClasseService = {
+  getAll: () => api.get('/classes'),
+  get: (id) => api.get(`/classes/${id}`),
+  create: (data) => api.post('/classes', data),
+  update: (id, data) => api.patch(`/classes/${id}`, data, {
+    headers: { 'Content-Type': 'application/merge-patch+json' }
+  }),
+  delete: (id) => api.delete(`/classes/${id}`),
 };
 
 export const FeeService = {
@@ -17,6 +34,7 @@ export const FeeService = {
   getUnpaid: (month, year) => api.get('/fees', {
     params: { month, year, isPaid: false }
   }),
+  pay: (feeIds) => api.post('/fees/pay', { feeIds }),
   markAsPaid: (id) => api.patch(`/fees/${id}`, { isPaid: true }, {
     headers: { 'Content-Type': 'application/merge-patch+json' }
   }),

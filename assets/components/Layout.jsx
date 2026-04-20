@@ -15,6 +15,7 @@ const Layout = ({ children }) => {
   const menuItems = [
     { name: 'Tableau de bord', path: '/', icon: LayoutDashboard },
     { name: 'Élèves', path: '/students', icon: Users },
+    { name: 'Classes', path: '/classes', icon: School },
     { name: 'Écolage', path: '/fees', icon: CreditCard },
     { name: 'Actualités', path: '/news', icon: Newspaper },
     { name: 'Comptabilité', path: '/accounting', icon: Calculator },

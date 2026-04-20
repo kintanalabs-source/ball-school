@@ -10,8 +10,27 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
+
 #[ORM\Entity(repositoryClass: StudentRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(),
+        new Post(),
+        new Get(),
+        new Put(),
+        new Patch(),
+        new Delete(),
+        new Post(
+            uriTemplate: '/students/{id}/generate-year-fees',
+            controller: 'App\Controller\GenerateYearFeesController'
+        )
+    ],
     normalizationContext: ['groups' => ['student:read']],
     denormalizationContext: ['groups' => ['student:write']]
 )]
@@ -54,6 +73,10 @@ class Student
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['student:read'])]
     private ?\DateTimeInterface $registrationDate = null;
+
+    #[ORM\ManyToOne(targetEntity: Classe::class, inversedBy: 'students')]
+    #[Groups(['student:read', 'student:write'])]
+    private ?Classe $classe = null;
 
     /**
      * @var Collection<int, Fee>
@@ -164,6 +187,18 @@ class Student
     public function setRegistrationDate(\DateTimeInterface $registrationDate): static
     {
         $this->registrationDate = $registrationDate;
+
+        return $this;
+    }
+
+    public function getClasse(): ?Classe
+    {
+        return $this->classe;
+    }
+
+    public function setClasse(?Classe $classe): static
+    {
+        $this->classe = $classe;
 
         return $this;
     }

@@ -12,8 +12,28 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
+use App\Dto\FeePaymentInput;
+use App\State\FeePaymentProcessor;
+
 #[ORM\Entity(repositoryClass: FeeRepository::class)]
 #[ApiResource(
+    operations: [
+        new GetCollection(),
+        new Get(),
+        new Post(),
+        new Patch(),
+        new Post(
+            uriTemplate: '/fees/pay',
+            status: 202,
+            input: FeePaymentInput::class,
+            processor: FeePaymentProcessor::class,
+            denormalizationContext: ['groups' => ['fee:pay']]
+        )
+    ],
     normalizationContext: ['groups' => ['fee:read']],
     denormalizationContext: ['groups' => ['fee:write']]
 )]
