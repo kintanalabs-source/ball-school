@@ -72,7 +72,7 @@ const Students = () => {
   };
 
   const loadStudentUnpaidFees = (studentId) => {
-    FeeService.getAll({ student: studentId, isPaid: false })
+    FeeService.getAll({ 'student.id': studentId, isPaid: false })
       .then(res => {
         setStudentUnpaidFees(res.data['member'] || res.data['hydra:member'] || []);
       })
@@ -87,13 +87,13 @@ const Students = () => {
   };
 
   const handlePaymentSelection = (fee) => {
-  const identifier = fee['@id'] || `/api/fees/${fee.id}`;
-  setSelectedFeesToPay(prev =>
-    prev.includes(identifier)
-      ? prev.filter(id => id !== identifier)
-      : [...prev, identifier]
-  );
-};
+    const identifier = fee.id;
+    setSelectedFeesToPay(prev =>
+      prev.includes(identifier)
+        ? prev.filter(id => id !== identifier)
+        : [...prev, identifier]
+    );
+  };
   
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -533,7 +533,7 @@ const Students = () => {
                     <button 
                         onClick={() => {
                             if (selectedFeesToPay.length === studentUnpaidFees.length) setSelectedFeesToPay([]);
-                            else setSelectedFeesToPay(studentUnpaidFees.map(f => f['@id'] || `/api/fees/${f.id}`));
+                            else setSelectedFeesToPay(studentUnpaidFees.map(f => f.id));
                         }}
                         className="text-xs text-blue-600 font-bold hover:underline"
                     >
@@ -549,7 +549,7 @@ const Students = () => {
                       <input
                         type="checkbox"
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        checked={selectedFeesToPay.includes(fee['@id'] || `/api/fees/${fee.id}`)}
+                        checked={selectedFeesToPay.includes(fee.id)}
                         onChange={() => handlePaymentSelection(fee)}
                       />
                       <div>
