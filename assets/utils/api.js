@@ -8,6 +8,11 @@ const api = axios.create({
   }
 });
 
+export const AuthService = {
+  login: (credentials) => api.post('/login', credentials),
+  register: (data) => api.post('/register', data),
+};
+
 export const StudentService = {
   getAll: () => api.get('/students'),
   get: (id) => api.get(`/students/${id}`),

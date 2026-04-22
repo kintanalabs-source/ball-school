@@ -1,19 +1,21 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
   CreditCard,
   Newspaper,
   Calculator,
-  School
+  School,
+  LogOut
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const menuItems = [
-    { name: 'Tableau de bord', path: '/', icon: LayoutDashboard },
+    { name: 'Tableau de bord', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Élèves', path: '/students', icon: Users },
     { name: 'Classes', path: '/classes', icon: School },
     { name: 'Écolage', path: '/fees', icon: CreditCard },
@@ -29,7 +31,7 @@ const Layout = ({ children }) => {
           <div className="p-2 bg-blue-600 rounded-lg text-white">
             <School size={24} />
           </div>
-          <span className="text-xl font-bold text-gray-800">EduGestion</span>
+          <span className="text-xl font-bold text-gray-800">FJKM Mahalavolona</span>
         </div>
 
         <nav className="mt-6 px-4">
@@ -62,6 +64,13 @@ const Layout = ({ children }) => {
             {menuItems.find(item => item.path === location.pathname)?.name || 'Application'}
           </h1>
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 text-gray-400 hover:text-red-600 transition-colors p-2 rounded-full hover:bg-red-50"
+              title="Déconnexion"
+            >
+              <LogOut size={20} />
+            </button>
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
               AD
             </div>

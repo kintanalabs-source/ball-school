@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { StudentService, ClasseService } from '../utils/api';
 import { config } from '../utils/config';
-import { Search, Plus, Edit2, Trash2, User, Mail, Phone, Calendar as CalendarIcon, MapPin, BookOpen, DollarSign } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, User, Mail, Phone, Calendar as CalendarIcon, MapPin, BookOpen, DollarSign, LogOut } from 'lucide-react';
 import Modal from '../components/Modal';
 
 const Students = () => {
@@ -13,6 +14,7 @@ const Students = () => {
   const [isClasseModalOpen, setIsClasseModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -131,13 +133,15 @@ const Students = () => {
             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
-        <button
-          onClick={() => { setIsEditing(false); setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '' }); setIsModalOpen(true); }}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={20} />
-          Ajouter un élève
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => { setIsEditing(false); setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '' }); setIsModalOpen(true); }}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={20} />
+            Ajouter un élève
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">

@@ -1,5 +1,5 @@
 export const config = {
-  schoolName: "EduGestion",
+  schoolName: "FJKM Mahalavolona",
   logo: "🏫",
   theme: {
     primary: "#3b82f6", // Blue 600
@@ -8,7 +8,7 @@ export const config = {
   },
   currency: "Ar",
   navigation: [
-    { name: 'Tableau de bord', path: '/' },
+    { name: 'Tableau de bord', path: '/dashboard' },
     { name: 'Élèves', path: '/students' },
     { name: 'Écolage', path: '/fees' },
     { name: 'Actualités', path: '/news' },
