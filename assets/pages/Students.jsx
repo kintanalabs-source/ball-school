@@ -87,7 +87,7 @@ const Students = () => {
   };
 
   const handlePaymentSelection = (fee) => {
-  const identifier = fee['@id'] || `/api/fees/${fee.id}`;
+  const identifier = fee['id'] || `${fee.id}`;
   setSelectedFeesToPay(prev =>
     prev.includes(identifier)
       ? prev.filter(id => id !== identifier)
@@ -127,21 +127,27 @@ const Students = () => {
       return;
     }
 
-    if (window.confirm(`Confirmer le paiement de ${selectedFeesToPay.length} écolage(s) ?`)) {
+    if (
+      window.confirm(
+        `Confirmer le paiement de ${selectedFeesToPay.length} écolage(s) ?`
+      )
+    ) {
       setIsSubmittingPayment(true);
       console.log("Appel API FeeService.pay lancé...");
 
       FeeService.pay(selectedFeesToPay)
-        .then(res => {
+        .then((res) => {
           console.log("Paiement enregistré avec succès !", res);
           setIsPaymentModalOpen(false);
           setSelectedFeesToPay([]); // Vider la sélection
-          alert('Le paiement a été enregistré avec succès.');
+          alert("Le paiement a été enregistré avec succès.");
           loadStudents();
         })
-        .catch(err => {
+        .catch((err) => {
           console.error("Erreur API paiement:", err);
-          alert("Erreur lors de l'enregistrement. Vérifiez votre contrôleur.");
+          alert(
+            "Erreur lors de l'enregistrement. Vérifiez votre contrôleur."
+          );
         })
         .finally(() => {
           setIsSubmittingPayment(false);
@@ -533,7 +539,7 @@ const Students = () => {
                     <button 
                         onClick={() => {
                             if (selectedFeesToPay.length === studentUnpaidFees.length) setSelectedFeesToPay([]);
-                            else setSelectedFeesToPay(studentUnpaidFees.map(f => f['@id'] || `/api/fees/${f.id}`));
+                            else setSelectedFeesToPay(studentUnpaidFees.map(f => f['id'] || `${f.id}`));
                         }}
                         className="text-xs text-blue-600 font-bold hover:underline"
                     >
@@ -549,7 +555,7 @@ const Students = () => {
                       <input
                         type="checkbox"
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        checked={selectedFeesToPay.includes(fee['@id'] || `/api/fees/${fee.id}`)}
+                        checked={selectedFeesToPay.includes(fee['id'] || `${fee.id}`)}
                         onChange={() => handlePaymentSelection(fee)}
                       />
                       <div>

@@ -10,7 +10,7 @@ use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use App\Repository\FeeRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -18,6 +18,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
 use App\Dto\FeePaymentInput;
 use App\State\FeePaymentProcessor;
+use Symfony\Component\Serializer\Attribute\SerializedName;
 
 #[ORM\Entity(repositoryClass: FeeRepository::class)]
 #[ApiResource(
@@ -66,7 +67,7 @@ class Fee
 
     #[ORM\Column]
     #[Groups(['fee:read', 'fee:write'])]
-    private ?bool $isPaid = false;
+    private bool $isPaid = false;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Groups(['fee:read', 'fee:write'])]
@@ -129,7 +130,9 @@ class Fee
         return $this;
     }
 
-    public function isPaid(): ?bool
+    #[Groups(['fee:read'])]
+    #[SerializedName('isPaid')]
+    public function isPaid(): bool
     {
         return $this->isPaid;
     }
