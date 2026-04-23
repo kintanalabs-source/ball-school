@@ -45,13 +45,19 @@ export const FeeService = {
   }),
 };
 
+export const SchoolYearService = {
+  getAll: () => api.get('/school_years'),
+  get: (id) => api.get(`/school_years/${id}`),
+  create: (data) => api.post('/school_years', data),
+};
+
 export const NewsService = {
   getAll: () => api.get('/news'),
   create: (data) => api.post('/news', data),
 };
 
 export const AccountingService = {
-  getAll: () => api.get('/accounting_movements'),
+  getAll: (params) => api.get('/accounting_movements', { params }),
   create: (data) => api.post('/accounting_movements', data),
 };
 

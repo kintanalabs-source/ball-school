@@ -36,7 +36,7 @@ use ApiPlatform\Metadata\Delete;
     normalizationContext: ['groups' => ['student:read']],
     denormalizationContext: ['groups' => ['student:write']]
 )]
-#[ApiFilter(SearchFilter::class, properties: ['classe' => 'exact'])]
+#[ApiFilter(SearchFilter::class, properties: ['classe' => 'exact', 'schoolYear' => 'exact'])]
 class Student
 {
     #[ORM\Id]
@@ -95,6 +95,10 @@ class Student
     #[ORM\Column(nullable: true)]
     #[Groups(['student:read', 'student:write'])]
     private ?int $registrationFee = null;
+
+    #[ORM\ManyToOne(inversedBy: 'students')]
+    #[Groups(['student:read', 'student:write'])]
+    private ?SchoolYear $schoolYear = null;
 
     public function __construct()
     {
@@ -265,6 +269,18 @@ class Student
     public function setRegistrationFee(?int $registrationFee): static
     {
         $this->registrationFee = $registrationFee;
+
+        return $this;
+    }
+
+    public function getSchoolYear(): ?SchoolYear
+    {
+        return $this->schoolYear;
+    }
+
+    public function setSchoolYear(?SchoolYear $schoolYear): static
+    {
+        $this->schoolYear = $schoolYear;
 
         return $this;
     }

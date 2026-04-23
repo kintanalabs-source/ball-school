@@ -20,7 +20,7 @@ const Login = () => {
 
     try {
       await AuthService.login({ email, password });
-      navigate('/dashboard');
+      navigate('/school-years');
     } catch (err) {
       setError('Identifiants invalides ou problème de connexion.');
       setIsLoading(false);

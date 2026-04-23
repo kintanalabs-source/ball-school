@@ -38,7 +38,7 @@ use Symfony\Component\Serializer\Attribute\SerializedName;
     normalizationContext: ['groups' => ['fee:read']],
     denormalizationContext: ['groups' => ['fee:write']]
 )]
-#[ApiFilter(SearchFilter::class, properties: ['student.id' => 'exact', 'month' => 'exact', 'year' => 'exact'])]
+#[ApiFilter(SearchFilter::class, properties: ['student.id' => 'exact', 'month' => 'exact', 'year' => 'exact', 'schoolYear' => 'exact'])]
 #[ApiFilter(BooleanFilter::class, properties: ['isPaid'])]
 class Fee
 {
@@ -76,6 +76,10 @@ class Fee
     #[ORM\Column(length: 50)]
     #[Groups(['fee:read', 'fee:write'])]
     private ?string $type = 'ecolage'; // ecolage, inscription, reinscription
+
+    #[ORM\ManyToOne]
+    #[Groups(['fee:read', 'fee:write'])]
+    private ?SchoolYear $schoolYear = null;
 
     public function getId(): ?int
     {
@@ -164,6 +168,18 @@ class Fee
     public function setType(string $type): static
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    public function getSchoolYear(): ?SchoolYear
+    {
+        return $this->schoolYear;
+    }
+
+    public function setSchoolYear(?SchoolYear $schoolYear): static
+    {
+        $this->schoolYear = $schoolYear;
 
         return $this;
     }
