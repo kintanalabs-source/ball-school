@@ -65,8 +65,16 @@ const Classes = () => {
     setIsDetailOpen(true);
     setClassStudents([]);
     
-    // On récupère les élèves dont la classe correspond à l'IRI de la classe sélectionnée
-    StudentService.getAll({ classe: classe['@id'] })
+    // Récupérer l'année scolaire sélectionnée dans le localStorage
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    
+    // Filtrer par classe ET par année scolaire
+    const params = { 
+        classe: classe['@id'],
+        schoolYear: selectedYear?.['@id'] || selectedYear?.id
+    };
+
+    StudentService.getAll(params)
       .then(res => {
         setClassStudents(res.data['member'] || res.data['hydra:member'] || []);
       })

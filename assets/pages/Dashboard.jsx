@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { StudentService, FeeService, AccountingService, NewsService } from '../utils/api';
 import { config } from '../utils/config';
 import {
   Users,
   TrendingUp,
   TrendingDown,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft
 } from 'lucide-react';
 
 const StatCard = ({ title, value, icon: Icon, color, trend }) => (
@@ -38,24 +40,54 @@ const Dashboard = () => {
   });
   const [recentFees, setRecentFees] = useState([]);
   const [recentNews, setRecentNews] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    
+    // Sécurité : Rediriger si aucune année n'est sélectionnée
+    if (!selectedYear) {
+      navigate('/school-years');
+      return;
+    }
+
+    const yearId = selectedYear?.['@id'] || selectedYear?.id;
+    
+    // Paramètres de filtrage globaux par année scolaire
+    const params = yearId ? { schoolYear: yearId } : {};
+
     // In a real app we would have a dedicated stats endpoint
-    StudentService.getAll().then(res => setStats(s => ({...s, students: res.data['totalItems'] || res.data['hydra:totalItems']})));
-    AccountingService.getAll().then(res => {
+    StudentService.getAll(params).then(res => setStats(s => ({...s, students: res.data['totalItems'] || res.data['hydra:totalItems']})));
+    
+    AccountingService.getAll(params).then(res => {
         const movs = res.data['member'] || res.data['hydra:member'] || [];
         const entries = movs.filter(m => m.type === 'entry').reduce((acc, curr) => acc + curr.amount, 0);
         const exits = movs.filter(m => m.type === 'exit').reduce((acc, curr) => acc + curr.amount, 0);
         setStats(s => ({...s, entries, exits}));
     });
-    FeeService.getAll({ isPaid: false }).then(res => setStats(s => ({...s, unpaid: res.data['totalItems'] || res.data['hydra:totalItems']})));
 
-    FeeService.getAll({ isPaid: true }).then(res => setRecentFees((res.data['member'] || res.data['hydra:member'])?.slice(0, 4) || []));
+    FeeService.getAll({ ...params, isPaid: false }).then(res => setStats(s => ({...s, unpaid: res.data['totalItems'] || res.data['hydra:totalItems']})));
+
+    FeeService.getAll({ ...params, isPaid: true }).then(res => setRecentFees((res.data['member'] || res.data['hydra:member'])?.slice(0, 4) || []));
     NewsService.getAll().then(res => setRecentNews((res.data['member'] || res.data['hydra:member'])?.slice(0, 3) || []));
   }, []);
 
   return (
     <div className="space-y-8">
+      <div className="flex justify-between items-start">
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-black text-gray-800">Tableau de Bord</h2>
+          <p className="text-blue-600 font-bold text-sm uppercase tracking-widest">Année Scolaire : {JSON.parse(localStorage.getItem('selectedSchoolYear'))?.label}</p>
+        </div>
+        <button 
+          onClick={() => navigate('/school-years')}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
+        >
+          <ArrowLeft size={18} />
+          Changer d'année
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Élèves"

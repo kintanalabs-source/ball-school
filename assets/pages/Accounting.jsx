@@ -17,9 +17,13 @@ const Accounting = () => {
 
   const loadMovements = () => {
     setLoading(true);
-    AccountingService.getAll()
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    const yearId = selectedYear?.['@id'] || selectedYear?.id;
+    const params = yearId ? { schoolYear: yearId } : {};
+
+    AccountingService.getAll(params)
       .then(res => {
-        setMovements(res.data['member'] || []);
+        setMovements(res.data['member'] || res.data['hydra:member'] || []);
         setLoading(false);
       })
       .catch(err => {
@@ -34,10 +38,15 @@ const Accounting = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    const yearIri = selectedYear?.['@id'] || `/api/school_years/${selectedYear.id}`;
+
     const data = {
         ...formData,
-        amount: parseFloat(formData.amount)
+        amount: parseFloat(formData.amount),
+        schoolYear: yearIri
     };
+
     AccountingService.create(data)
       .then(() => {
         setIsModalOpen(false);

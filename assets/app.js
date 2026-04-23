@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
 import Classes from './pages/Classes';
+import SchoolYears from './pages/SchoolYears';
 import Fees from './pages/Fees';
 import News from './pages/News';
 import Accounting from './pages/Accounting';
@@ -22,6 +23,7 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
 
+                <Route path="/school-years" element={<Layout><SchoolYears /></Layout>} />
                 {/* Les autres routes sont enveloppées individuellement par le Layout pour afficher la sidebar */}
                 <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
                 <Route path="/students" element={<Layout><Students /></Layout>} />

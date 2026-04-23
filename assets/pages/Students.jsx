@@ -41,7 +41,10 @@ const Students = () => {
 
   const loadStudents = () => {
     setLoading(true);
-    StudentService.getAll()
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    const params = selectedYear ? { schoolYear: selectedYear['@id'] || selectedYear.id } : {};
+    
+    StudentService.getAll(params)
       .then(res => {
         setStudents(res.data['member'] || res.data['hydra:member'] || []);
         setLoading(false);
@@ -99,9 +102,12 @@ const Students = () => {
   
   const handleSubmit = (e) => {
     e.preventDefault();
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    const studentData = { ...formData, schoolYear: selectedYear['@id'] || `/api/school_years/${selectedYear.id}` };
+    
     const service = isEditing 
         ? StudentService.update(selectedStudent.id, formData) 
-        : StudentService.create(formData);
+        : StudentService.create(studentData);
     
     service.then(() => {
         setIsModalOpen(false);
