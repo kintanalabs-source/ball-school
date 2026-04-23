@@ -3,12 +3,14 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use App\Repository\StudentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -34,6 +36,7 @@ use ApiPlatform\Metadata\Delete;
     normalizationContext: ['groups' => ['student:read']],
     denormalizationContext: ['groups' => ['student:write']]
 )]
+#[ApiFilter(SearchFilter::class, properties: ['classe' => 'exact'])]
 class Student
 {
     #[ORM\Id]
@@ -82,7 +85,16 @@ class Student
      * @var Collection<int, Fee>
      */
     #[ORM\OneToMany(targetEntity: Fee::class, mappedBy: 'student', orphanRemoval: true)]
+    #[Groups(['student:read'])]
     private Collection $fees;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['student:read', 'student:write'])]
+    private ?string $matricule = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(['student:read', 'student:write'])]
+    private ?int $registrationFee = null;
 
     public function __construct()
     {
@@ -229,6 +241,30 @@ class Student
                 $fee->setStudent(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getMatricule(): ?string
+    {
+        return $this->matricule;
+    }
+
+    public function setMatricule(?string $matricule): static
+    {
+        $this->matricule = $matricule;
+
+        return $this;
+    }
+
+    public function getRegistrationFee(): ?int
+    {
+        return $this->registrationFee;
+    }
+
+    public function setRegistrationFee(?int $registrationFee): static
+    {
+        $this->registrationFee = $registrationFee;
 
         return $this;
     }

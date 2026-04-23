@@ -14,7 +14,7 @@ export const AuthService = {
 };
 
 export const StudentService = {
-  getAll: () => api.get('/students'),
+  getAll: (params) => api.get('/students', { params }),
   get: (id) => api.get(`/students/${id}`),
   create: (data) => api.post('/students', data),
   update: (id, data) => api.patch(`/students/${id}`, data, {

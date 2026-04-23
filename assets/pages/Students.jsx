@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StudentService, ClasseService, FeeService } from '../utils/api';
 import { config } from '../utils/config';
-import { Search, Plus, Edit2, Trash2, User, Mail, Phone, Calendar as CalendarIcon, MapPin, BookOpen, DollarSign, LogOut, Eye } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, User, Mail, Phone, Calendar as CalendarIcon, MapPin, BookOpen, DollarSign, LogOut, Eye, Tag } from 'lucide-react';
 import Modal from '../components/Modal';
 
 const Students = () => {
@@ -29,7 +29,9 @@ const Students = () => {
     address: '',
     phoneNumber: '',
     email: '',
-    classe: ''
+    classe: '',
+    matricule: '',
+    registrationFee: 0
   });
 
   const [classeData, setClasseData] = useState({
@@ -66,7 +68,7 @@ const Students = () => {
 
   const openAddModal = () => {
     setIsEditing(false);
-    setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '' });
+    setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '', matricule: '', registrationFee: 0 });
     loadClasses(); // Reload classes when opening modal
     setIsModalOpen(true);
   };
@@ -87,7 +89,7 @@ const Students = () => {
   };
 
   const handlePaymentSelection = (fee) => {
-  const identifier = fee['id'] || `${fee.id}`;
+  const identifier = fee.id;
   setSelectedFeesToPay(prev =>
     prev.includes(identifier)
       ? prev.filter(id => id !== identifier)
@@ -104,7 +106,7 @@ const Students = () => {
     service.then(() => {
         setIsModalOpen(false);
         setIsEditing(false);
-        setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '' });
+        setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '', matricule: '', registrationFee: 0 });
         loadStudents();
       })
       .catch(err => console.error(err));
@@ -172,12 +174,14 @@ const Students = () => {
     setFormData({
         firstName: student.firstName,
         lastName: student.lastName,
-        birthDate: student.birthDate.split('T')[0],
+        birthDate: student.birthDate ? student.birthDate.split('T')[0] : '',
         gender: student.gender,
         address: student.address || '',
         phoneNumber: student.phoneNumber || '',
         email: student.email || '',
-        classe: student.classe?.['@id'] || ''
+        classe: student.classe?.['@id'] || '',
+        matricule: student.matricule || '',
+        registrationFee: student.registrationFee || 0
     });
     setIsModalOpen(true);
   };
@@ -216,7 +220,7 @@ const Students = () => {
         </div>
         <div className="flex items-center gap-4">
           <button
-            onClick={() => { setIsEditing(false); setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '' }); setIsModalOpen(true); }}
+            onClick={() => { setIsEditing(false); setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '', matricule: '', registrationFee: 0 }); setIsModalOpen(true); }}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
             <Plus size={20} />
@@ -250,7 +254,7 @@ const Students = () => {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-800">{student.firstName} {student.lastName}</p>
-                      <p className="text-xs text-gray-500">ID: #{student.id.toString().padStart(4, '0')}</p>
+                      <p className="text-xs text-gray-500">{student.matricule ? `Mat: ${student.matricule}` : `ID: #${student.id.toString().padStart(4, '0')}`}</p>
                     </div>
                   </div>
                 </td>
@@ -316,6 +320,28 @@ const Students = () => {
         title={isEditing ? "Modifier l'élève" : "Ajouter un nouvel élève"}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Matricule</label>
+              <input
+                type="text"
+                placeholder="Ex: MAT-2024-001"
+                value={formData.matricule}
+                onChange={(e) => setFormData({...formData, matricule: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Droit d'entrée ({config.currency})</label>
+              <input
+                required
+                type="number"
+                value={formData.registrationFee}
+                onChange={(e) => setFormData({...formData, registrationFee: parseInt(e.target.value)})}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
@@ -431,6 +457,15 @@ const Students = () => {
             </div>
 
             <div className="grid grid-cols-1 gap-4 mt-4">
+              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                <div className="p-2 bg-white rounded-lg shadow-sm">
+                  <Tag className="text-blue-600" size={20} />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Numéro Matricule</p>
+                  <p className="text-gray-800 font-bold">{selectedStudent.matricule || 'Non assigné'}</p>
+                </div>
+              </div>
               <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
                 <BookOpen className="text-gray-400" size={20} />
                 <div>
@@ -539,7 +574,7 @@ const Students = () => {
                     <button 
                         onClick={() => {
                             if (selectedFeesToPay.length === studentUnpaidFees.length) setSelectedFeesToPay([]);
-                            else setSelectedFeesToPay(studentUnpaidFees.map(f => f['id'] || `${f.id}`));
+                            else setSelectedFeesToPay(studentUnpaidFees.map(f => f.id));
                         }}
                         className="text-xs text-blue-600 font-bold hover:underline"
                     >
@@ -555,7 +590,7 @@ const Students = () => {
                       <input
                         type="checkbox"
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        checked={selectedFeesToPay.includes(fee['id'] || `${fee.id}`)}
+                        checked={selectedFeesToPay.includes(fee.id)}
                         onChange={() => handlePaymentSelection(fee)}
                       />
                       <div>

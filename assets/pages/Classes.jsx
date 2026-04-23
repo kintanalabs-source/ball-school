@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { ClasseService } from '../utils/api';
+import { ClasseService, StudentService } from '../utils/api';
 import { config } from '../utils/config';
-import { Plus, Edit2, Trash2, School, DollarSign, Users } from 'lucide-react';
+import { Plus, Edit2, Trash2, School, DollarSign, Users, Eye } from 'lucide-react';
 import Modal from '../components/Modal';
 
 const Classes = () => {
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedClasse, setSelectedClasse] = useState(null);
+  const [classStudents, setClassStudents] = useState([]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -58,6 +60,19 @@ const Classes = () => {
     setIsModalOpen(true);
   };
 
+  const openDetail = (classe) => {
+    setSelectedClasse(classe);
+    setIsDetailOpen(true);
+    setClassStudents([]);
+    
+    // On récupère les élèves dont la classe correspond à l'IRI de la classe sélectionnée
+    StudentService.getAll({ classe: classe['@id'] })
+      .then(res => {
+        setClassStudents(res.data['member'] || res.data['hydra:member'] || []);
+      })
+      .catch(err => console.error(err));
+  };
+
   const handleDelete = (id) => {
     if (window.confirm('Supprimer cette classe ? Cela pourrait affecter les élèves liés.')) {
         ClasseService.delete(id).then(() => loadClasses());
@@ -87,6 +102,9 @@ const Classes = () => {
                     <School size={24} />
                 </div>
                 <div className="flex gap-2">
+                    <button onClick={() => openDetail(classe)} className="p-2 text-gray-400 hover:text-green-600 transition-colors" title="Liste des élèves">
+                        <Eye size={18} />
+                    </button>
                     <button onClick={() => openEdit(classe)} className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
                         <Edit2 size={18} />
                     </button>
@@ -151,6 +169,49 @@ const Classes = () => {
             {isEditing ? 'Mettre à jour' : "Créer la classe"}
           </button>
         </form>
+      </Modal>
+
+      {/* Modal Liste des élèves de la classe */}
+      <Modal 
+        isOpen={isDetailOpen} 
+        onClose={() => setIsDetailOpen(false)} 
+        title={`Élèves inscrits en ${selectedClasse?.name}`}
+      >
+        <div className="space-y-4">
+          {classStudents.length > 0 ? (
+            <div className="overflow-hidden border border-gray-100 rounded-lg">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    <th className="px-4 py-3 font-bold text-gray-600 uppercase">Matricule</th>
+                    <th className="px-4 py-3 font-bold text-gray-600 uppercase">Nom & Prénom</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {classStudents.map((student) => (
+                    <tr key={student.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <span className="font-mono text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                          {student.matricule || 'N/A'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-gray-800">
+                        {student.firstName} {student.lastName}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="p-3 bg-gray-50 border-t border-gray-100 text-right">
+                <p className="text-xs text-gray-500 font-bold">Total : {classStudents.length} élève(s)</p>
+              </div>
+            </div>
+          ) : (
+            <div className="p-8 text-center text-gray-500 italic">
+              Aucun élève n'est encore inscrit dans cette classe.
+            </div>
+          )}
+        </div>
       </Modal>
     </div>
   );
