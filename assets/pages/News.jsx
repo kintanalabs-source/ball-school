@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { NewsService } from '../utils/api';
 import { config } from '../utils/config';
-import { Plus, Calendar, Tag, ExternalLink, Image as ImageIcon } from 'lucide-react';
+import { Plus, Calendar, Tag, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
 import Modal from '../components/Modal';
 
 const News = () => {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedNews, setSelectedNews] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -87,10 +89,17 @@ const News = () => {
                 {item.content}
               </p>
               <div className="mt-6 pt-4 border-t border-gray-50 flex justify-between items-center">
-                <span className="text-xs font-bold text-green-600">Publié</span>
-                <button className="text-blue-600 text-sm font-bold flex items-center gap-1 hover:underline">
-                  Modifier <ExternalLink size={14} />
-                </button>
+                <span className="text-xs font-bold text-gray-400">PUBLIÉ</span>
+                <div className="flex gap-3">
+                  <button onClick={() => openEdit(item)} className="text-blue-600 text-sm font-bold flex items-center gap-1 hover:underline">
+                    <Edit2 size={14} />
+                    Modifier
+                  </button>
+                  <button onClick={() => handleDelete(item.id)} className="text-red-600 text-sm font-bold flex items-center gap-1 hover:underline">
+                    <Trash2 size={14} />
+                    Supprimer
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -100,7 +109,11 @@ const News = () => {
         )}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Publier une nouvelle">
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => { setIsModalOpen(false); setIsEditing(false); }} 
+        title={isEditing ? "Modifier l'actualité" : "Publier une nouvelle"}
+      >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Titre</label>
@@ -147,7 +160,7 @@ const News = () => {
             />
           </div>
           <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
-            Publier maintenant
+            {isEditing ? 'Enregistrer les modifications' : 'Publier maintenant'}
           </button>
         </form>
       </Modal>

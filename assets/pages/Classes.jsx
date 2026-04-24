@@ -19,8 +19,13 @@ const Classes = () => {
   });
 
   const loadClasses = () => {
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    const yearIRI = selectedYear?.['@id'] || (selectedYear?.id ? `/api/school_years/${selectedYear.id}` : null);
+    
     setLoading(true);
-    ClasseService.getAll()
+    const params = yearIRI ? { schoolYear: yearIRI } : {};
+
+    ClasseService.getAll(params)
       .then(res => {
         setClasses(res.data['member'] || res.data['hydra:member'] || []);
         setLoading(false);
@@ -32,14 +37,22 @@ const Classes = () => {
   };
 
   useEffect(() => {
+    // Ensure a school year is selected before loading classes
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    if (!selectedYear) return; // Do not proceed if no year is selected
+
     loadClasses();
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    const yearIRI = selectedYear?.['@id'] || `/api/school_years/${selectedYear.id}`;
+
+    const data = { ...formData, schoolYear: yearIRI };
     const service = isEditing 
-        ? ClasseService.update(selectedClasse.id, formData) 
-        : ClasseService.create(formData);
+        ? ClasseService.update(selectedClasse.id, data) 
+        : ClasseService.create(data);
     
     service.then(() => {
         setIsModalOpen(false);
@@ -87,12 +100,19 @@ const Classes = () => {
     }
   };
 
-  if (loading && classes.length === 0) return <div className="p-8 text-center text-gray-500">Chargement...</div>;
+  const currentSelectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+  if (!currentSelectedYear) {
+    return <div className="p-8 text-center text-red-500 font-bold">Veuillez sélectionner une année scolaire sur la page d'accueil.</div>;
+  }
+  if (loading && classes.length === 0) return <div className="p-8 text-center text-gray-500">Chargement des classes...</div>;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Gestion des Classes</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Gestion des Classes</h2>
+          <p className="text-sm text-blue-600 font-medium">Année scolaire : {JSON.parse(localStorage.getItem('selectedSchoolYear'))?.label}</p>
+        </div>
         <button
           onClick={() => { setIsEditing(false); setFormData({ name: '', tuitionPrice: 50000 }); setIsModalOpen(true); }}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
@@ -149,7 +169,7 @@ const Classes = () => {
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => { setIsModalOpen(false); setIsEditing(false); }} 
-        title={isEditing ? "Modifier la Classe" : "Ajouter une Classe"}
+        title={isEditing ? "Modifier la Classe" : `Ajouter une Classe (${JSON.parse(localStorage.getItem('selectedSchoolYear'))?.label})`}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

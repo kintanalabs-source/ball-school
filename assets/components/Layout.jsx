@@ -54,6 +54,13 @@ const Layout = ({ children }) => {
               </Link>
             );
           })}
+          <button
+            onClick={() => navigate('/')}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors text-gray-600 hover:bg-red-50 hover:text-red-600 mt-4 border-t border-gray-50 pt-6"
+          >
+            <LogOut size={20} />
+            <span className="font-bold uppercase text-xs tracking-wider">Déconnexion</span>
+          </button>
         </nav>
       </aside>
 
@@ -64,13 +71,6 @@ const Layout = ({ children }) => {
             {menuItems.find(item => item.path === location.pathname)?.name || 'Application'}
           </h1>
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center gap-2 text-gray-400 hover:text-red-600 transition-colors p-2 rounded-full hover:bg-red-50"
-              title="Déconnexion"
-            >
-              <LogOut size={20} />
-            </button>
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
               AD
             </div>
