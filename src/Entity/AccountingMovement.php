@@ -48,6 +48,10 @@ class AccountingMovement
     #[Groups(['accounting:read', 'accounting:write'])]
     private ?SchoolYear $schoolYear = null;
 
+    #[ORM\ManyToOne(inversedBy: 'accountingMovements')]
+    #[Groups(['accounting:read', 'accounting:write'])]
+    private ?Student $student = null;
+
     public function __construct()
     {
         $this->date = new \DateTime();
@@ -126,6 +130,18 @@ class AccountingMovement
     public function setSchoolYear(?SchoolYear $schoolYear): static
     {
         $this->schoolYear = $schoolYear;
+
+        return $this;
+    }
+
+    public function getStudent(): ?Student
+    {
+        return $this->student;
+    }
+
+    public function setStudent(?Student $student): static
+    {
+        $this->student = $student;
 
         return $this;
     }

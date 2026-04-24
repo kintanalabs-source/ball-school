@@ -18,6 +18,7 @@ const Students = () => {
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false); // État de chargement
   const [isEditing, setIsEditing] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [studentFeesForDetail, setStudentFeesForDetail] = useState([]); // Nouvel état pour les écolages filtrés
   const [searchTerm, setSearchTerm] = useState(''); // État pour la recherche
   const navigate = useNavigate();
 
@@ -77,7 +78,19 @@ const Students = () => {
   };
 
   const loadStudentUnpaidFees = (studentId) => {
-    FeeService.getAll({ student: studentId, isPaid: false })
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    const yearIRI = selectedYear?.['@id'] || (selectedYear?.id ? `/api/school_years/${selectedYear.id}` : null);
+    
+    const params = { 
+        'student.id': studentId, 
+        isPaid: false 
+    };
+
+    if (yearIRI) {
+        params.schoolYear = yearIRI;
+    }
+
+    FeeService.getAll(params)
       .then(res => {
         setStudentUnpaidFees(res.data['member'] || res.data['hydra:member'] || []);
       })
@@ -201,6 +214,26 @@ const Students = () => {
   const openDetail = (student) => {
     setSelectedStudent(student);
     setIsDetailOpen(true);
+    setStudentFeesForDetail([]); // Réinitialiser la liste avant de charger
+
+    // Récupérer l'année scolaire sélectionnée dans le localStorage
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    const yearIRI = selectedYear?.['@id'] || (selectedYear?.id ? `/api/school_years/${selectedYear.id}` : null);
+
+    // Paramètres pour filtrer les écolages par étudiant ET par année scolaire
+    const params = {
+      'student.id': student.id,
+    };
+
+    if (yearIRI) {
+      params.schoolYear = yearIRI;
+    }
+
+    FeeService.getAll(params)
+      .then(res => {
+        setStudentFeesForDetail(res.data['member'] || res.data['hydra:member'] || []);
+      })
+      .catch(err => console.error('Error loading student fees for detail:', err));
   };
 
   // Logique de filtrage pour la recherche
@@ -516,24 +549,46 @@ const Students = () => {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
-                <button 
-                    onClick={() => handleGenerateYear(selectedStudent.id)}
-                    className="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                    Générer Année
-                </button>
-                <button className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
-                    Historique Écolage
-                </button>
-            </div>
-            <div className="pt-4">
-                <button 
-                    onClick={() => openPaymentModal(selectedStudent)}
-                    className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors"
-                >
-                    Payer un écolage
-                </button>
+            <div className="mt-8">
+              <div className="flex items-center justify-between mb-4">
+                <h5 className="text-sm font-bold text-gray-700 uppercase tracking-widest">État des Écolages</h5>
+                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-md font-bold">
+                  Total : {studentFeesForDetail.length || 0} mois
+                </span>
+              </div>
+              
+              <div className="border border-gray-100 rounded-2xl overflow-hidden bg-white">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                      <th className="px-4 py-3 font-bold text-gray-600">Période</th>
+                      <th className="px-4 py-3 font-bold text-gray-600">Montant</th>
+                      <th className="px-4 py-3 font-bold text-gray-600">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {studentFeesForDetail.length > 0 ? (
+                      [...studentFeesForDetail].sort((a, b) => a.id - b.id).map((fee) => (
+                        <tr key={fee.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-4 py-3 font-medium text-gray-700">{fee.month} {fee.year}</td>
+                          <td className="px-4 py-3 text-gray-600">{fee.amount.toLocaleString()} {config.currency}</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
+                              fee.isPaid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                            }`}>
+                              {fee.isPaid ? 'Payé' : 'En attente'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="3" className="px-4 py-8 text-center text-gray-400 italic">Aucun écolage n'a encore été généré pour cette année.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}

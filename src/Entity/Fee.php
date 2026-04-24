@@ -54,15 +54,15 @@ class Fee
     private ?Student $student = null;
 
     #[ORM\Column]
-    #[Groups(['fee:read', 'fee:write'])]
+    #[Groups(['fee:read', 'fee:write', 'student:read'])]
     private ?float $amount = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['fee:read', 'fee:write'])]
+    #[Groups(['fee:read', 'fee:write', 'student:read'])]
     private ?string $month = null;
 
     #[ORM\Column]
-    #[Groups(['fee:read', 'fee:write'])]
+    #[Groups(['fee:read', 'fee:write', 'student:read'])]
     private ?int $year = null;
 
     #[ORM\Column]
@@ -78,6 +78,7 @@ class Fee
     private ?string $type = 'ecolage'; // ecolage, inscription, reinscription
 
     #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)] // L'année scolaire est obligatoire pour un écolage
     #[Groups(['fee:read', 'fee:write'])]
     private ?SchoolYear $schoolYear = null;
 

@@ -16,12 +16,20 @@ const Fees = () => {
   const [selectedFees, setSelectedFees] = useState([]);
 
   const loadFees = () => {
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    const yearIRI = selectedYear?.['@id'] || (selectedYear?.id ? `/api/school_years/${selectedYear.id}` : null);
+
     setLoading(true);
-    const params = { month: selectedMonth };
+    const params = { month: selectedMonth }; // Garde le filtre par mois
+
+    if (yearIRI) {
+        params.schoolYear = yearIRI; // Ajoute le filtre par année scolaire
+    }
+
     if (filter !== 'all') {
         params.isPaid = filter === 'paid';
     }
-    FeeService.getAll(params)
+    FeeService.getAll(params) // Envoie les paramètres à l'API
       .then(res => {
         setFees(res.data['member'] || res.data['hydra:member'] || []);
         setLoading(false);

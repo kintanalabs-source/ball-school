@@ -5,6 +5,7 @@ namespace App\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Dto\FeePaymentInput;
+use App\Entity\AccountingMovement;
 use App\Entity\Fee;
 use App\Event\FeePaidEvent;
 use App\Repository\FeeRepository;
@@ -38,6 +39,19 @@ class FeePaymentProcessor implements ProcessorInterface
             if (!$fee->isPaid()) {
                 $fee->setIsPaid(true);
                 $fee->setPaymentDate($paymentDate);
+
+                // Création automatique du mouvement comptable
+                $movement = new AccountingMovement();
+                $student = $fee->getStudent();
+                $movement->setLabel(sprintf('Écolage %s %s - %s %s', $fee->getMonth(), $fee->getYear(), $student->getFirstName(), $student->getLastName()));
+                $movement->setAmount($fee->getAmount());
+                $movement->setType('entry');
+                $movement->setCategory('Écolage');
+                $movement->setDate($paymentDate);
+                $movement->setSchoolYear($fee->getSchoolYear());
+                $movement->setStudent($student);
+                
+                $this->entityManager->persist($movement);
                 $fees[] = $fee;
             }
         }

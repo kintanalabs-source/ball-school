@@ -36,7 +36,8 @@ const Dashboard = () => {
     students: 0,
     entries: 0,
     exits: 0,
-    unpaid: 0
+    unpaid: 0,
+    initialBalance: 0
   });
   const [recentFees, setRecentFees] = useState([]);
   const [recentNews, setRecentNews] = useState([]);
@@ -51,10 +52,13 @@ const Dashboard = () => {
       return;
     }
 
-    const yearId = selectedYear?.['@id'] || selectedYear?.id;
+    // On s'assure d'utiliser l'IRI complet pour le filtrage API Platform
+    const yearIRI = selectedYear?.['@id'] || (selectedYear?.id ? `/api/school_years/${selectedYear.id}` : null);
     
     // Paramètres de filtrage globaux par année scolaire
-    const params = yearId ? { schoolYear: yearId } : {};
+    const params = yearIRI ? { schoolYear: yearIRI } : {};
+
+    setStats(s => ({...s, initialBalance: selectedYear.initialBalance || 0}));
 
     // In a real app we would have a dedicated stats endpoint
     StudentService.getAll(params).then(res => setStats(s => ({...s, students: res.data['totalItems'] || res.data['hydra:totalItems']})));
@@ -97,7 +101,7 @@ const Dashboard = () => {
           trend="+0%"
         />
         <StatCard
-          title="Recettes"
+          title="Recettes Période"
           value={`${stats.entries.toLocaleString()} ${config.currency}`}
           icon={TrendingUp}
           color="bg-green-500"
@@ -109,10 +113,10 @@ const Dashboard = () => {
           color="bg-red-500"
         />
         <StatCard
-          title="Écolages Impayés"
-          value={stats.unpaid}
-          icon={AlertCircle}
-          color="bg-orange-500"
+          title="Solde Final Estimé"
+          value={`${(stats.initialBalance + stats.entries - stats.exits).toLocaleString()} ${config.currency}`}
+          icon={TrendingUp}
+          color="bg-indigo-600"
         />
       </div>
 

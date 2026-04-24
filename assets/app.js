@@ -23,7 +23,8 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
 
-                <Route path="/school-years" element={<Layout><SchoolYears /></Layout>} />
+                {/* Page de sélection d'année sans sidebar pour un effet "Portail" */}
+                <Route path="/school-years" element={<SchoolYears />} />
                 {/* Les autres routes sont enveloppées individuellement par le Layout pour afficher la sidebar */}
                 <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
                 <Route path="/students" element={<Layout><Students /></Layout>} />

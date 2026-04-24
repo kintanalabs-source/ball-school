@@ -21,7 +21,7 @@ export const StudentService = {
     headers: { 'Content-Type': 'application/merge-patch+json' }
   }),
   delete: (id) => api.delete(`/students/${id}`),
-  generateYearFees: (id) => api.post(`/students/${id}/generate-year-fees`),
+  generateYearFees: (id) => api.post(`/students/${id}/generate-year-fees`, {}),
 };
 
 export const ClasseService = {
