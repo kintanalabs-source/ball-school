@@ -7,6 +7,7 @@ import Modal from '../components/Modal';
 const Accounting = () => {
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     label: '',
@@ -16,10 +17,15 @@ const Accounting = () => {
   });
 
   const loadMovements = () => {
+    const yearData = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    setSelectedYear(yearData);
+    
     setLoading(true);
-    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
-    const yearId = selectedYear?.['@id'] || selectedYear?.id;
-    const params = yearId ? { schoolYear: yearId } : {};
+    const yearIRI = yearData?.['@id'] || (yearData?.id ? `/api/school_years/${yearData.id}` : null); // Assurez-vous d'utiliser l'IRI
+    const params = {};
+    if (yearIRI) {
+      params.schoolYear = yearIRI;
+    }
 
     AccountingService.getAll(params)
       .then(res => {
@@ -38,13 +44,12 @@ const Accounting = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
-    const yearIri = selectedYear?.['@id'] || `/api/school_years/${selectedYear.id}`;
+    const yearIRI = selectedYear?.['@id'] || `/api/school_years/${selectedYear.id}`;
 
     const data = {
         ...formData,
         amount: parseFloat(formData.amount),
-        schoolYear: yearIri
+        schoolYear: yearIRI
     };
 
     AccountingService.create(data)
@@ -59,7 +64,13 @@ const Accounting = () => {
   const totalEntries = movements.filter(m => m.type === 'entry').reduce((acc, curr) => acc + curr.amount, 0);
   const totalExits = movements.filter(m => m.type === 'exit').reduce((acc, curr) => acc + curr.amount, 0);
 
-  if (loading && movements.length === 0) return <div className="p-8 text-center text-gray-500">Chargement...</div>;
+  // Calcul du solde final en incluant le report de l'année précédente
+  const initialBalance = selectedYear?.initialBalance || 0;
+  const currentBalance = initialBalance + totalEntries - totalExits;
+
+  if (loading) return <div className="p-8 text-center text-gray-500">Chargement des mouvements comptables...</div>;
+
+  if (!selectedYear) return <div className="p-8 text-center text-red-500 font-bold">Veuillez sélectionner une année scolaire sur la page d'accueil.</div>;
 
   return (
     <div className="space-y-8">
@@ -81,17 +92,19 @@ const Accounting = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl border-l-4 border-green-500 shadow-sm">
-          <p className="text-sm text-gray-500 font-medium">Total Entrées</p>
-          <h3 className="text-2xl font-bold text-green-600 mt-1">+{totalEntries.toLocaleString()} {config.currency}</h3>
+        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+          <p className="text-xs text-gray-400 font-bold uppercase">Solde Initial ({selectedYear?.label})</p>
+          <h3 className="text-xl font-bold text-gray-700 mt-1">{initialBalance.toLocaleString()} {config.currency}</h3>
         </div>
-        <div className="bg-white p-6 rounded-xl border-l-4 border-red-500 shadow-sm">
-          <p className="text-sm text-gray-500 font-medium">Total Sorties</p>
-          <h3 className="text-2xl font-bold text-red-600 mt-1">-{totalExits.toLocaleString()} {config.currency}</h3>
+        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+          <p className="text-xs text-gray-400 font-bold uppercase">Flux de l'année ({selectedYear?.label})</p>
+          <h3 className={`text-xl font-bold mt-1 ${totalEntries >= totalExits ? 'text-green-600' : 'text-red-600'}`}>
+            {(totalEntries - totalExits).toLocaleString()} {config.currency}
+          </h3>
         </div>
         <div className="bg-white p-6 rounded-xl border-l-4 border-blue-500 shadow-sm">
-          <p className="text-sm text-gray-500 font-medium">Solde Période</p>
-          <h3 className="text-2xl font-bold text-blue-600 mt-1">{(totalEntries - totalExits).toLocaleString()} {config.currency}</h3>
+          <p className="text-xs text-blue-500 font-bold uppercase">Solde Final ({selectedYear?.label})</p>
+          <h3 className="text-2xl font-black text-blue-700 mt-1">{currentBalance.toLocaleString()} {config.currency}</h3>
         </div>
       </div>
 
@@ -101,6 +114,7 @@ const Accounting = () => {
             <tr>
               <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Date</th>
               <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Libellé</th>
+              <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Élève</th>
               <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Catégorie</th>
               <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Montant</th>
             </tr>
@@ -110,6 +124,7 @@ const Accounting = () => {
               <tr key={m.id} className="hover:bg-gray-50/50">
                 <td className="px-6 py-4 text-gray-500 text-sm">{new Date(m.date).toLocaleDateString()}</td>
                 <td className="px-6 py-4 font-medium text-gray-800">{m.label}</td>
+                <td className="px-6 py-4 text-gray-600 text-sm">{m.student ? `${m.student.firstName} ${m.student.lastName}` : 'N/A'}</td>
                 <td className="px-6 py-4">
                   <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-bold uppercase tracking-wider">
                     {m.category}
@@ -124,8 +139,8 @@ const Accounting = () => {
             ))}
           </tbody>
         </table>
-        {movements.length === 0 && !loading && (
-            <div className="p-12 text-center text-gray-500 italic">Aucun mouvement enregistré.</div>
+        {movements.length === 0 && !loading && selectedYear && (
+            <div className="p-12 text-center text-gray-500 italic">Aucun mouvement enregistré pour l'année {selectedYear.label}.</div>
         )}
       </div>
 

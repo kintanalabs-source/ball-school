@@ -18,6 +18,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
+use App\State\GenerateYearFeesProcessor;
 
 #[ORM\Entity(repositoryClass: StudentRepository::class)]
 #[ApiResource(
@@ -30,7 +31,7 @@ use ApiPlatform\Metadata\Delete;
         new Delete(),
         new Post(
             uriTemplate: '/students/{id}/generate-year-fees',
-            controller: 'App\Controller\GenerateYearFeesController'
+            processor: GenerateYearFeesProcessor::class
         )
     ],
     normalizationContext: ['groups' => ['student:read']],
@@ -99,6 +100,12 @@ class Student
     #[ORM\ManyToOne(inversedBy: 'students')]
     #[Groups(['student:read', 'student:write'])]
     private ?SchoolYear $schoolYear = null;
+
+    /**
+     * @var Collection<int, AccountingMovement>
+     */
+    #[ORM\OneToMany(targetEntity: AccountingMovement::class, mappedBy: 'student', orphanRemoval: true)]
+    private Collection $accountingMovements;
 
     public function __construct()
     {
@@ -281,6 +288,36 @@ class Student
     public function setSchoolYear(?SchoolYear $schoolYear): static
     {
         $this->schoolYear = $schoolYear;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AccountingMovement>
+     */
+    public function getAccountingMovements(): Collection
+    {
+        return $this->accountingMovements;
+    }
+
+    public function addAccountingMovement(AccountingMovement $accountingMovement): static
+    {
+        if (!$this->accountingMovements->contains($accountingMovement)) {
+            $this->accountingMovements->add($accountingMovement);
+            $accountingMovement->setStudent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAccountingMovement(AccountingMovement $accountingMovement): static
+    {
+        if ($this->accountingMovements->removeElement($accountingMovement)) {
+            // set the owning side to null (unless already changed)
+            if ($accountingMovement->getStudent() === $this) {
+                $accountingMovement->setStudent(null);
+            }
+        }
 
         return $this;
     }

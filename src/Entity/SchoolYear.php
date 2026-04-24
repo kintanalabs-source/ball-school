@@ -57,10 +57,24 @@ class SchoolYear
     #[ORM\OneToMany(targetEntity: Student::class, mappedBy: 'schoolYear')]
     private Collection $students;
 
+    /**
+     * @var Collection<int, Fee>
+     */
+    #[ORM\OneToMany(targetEntity: Fee::class, mappedBy: 'schoolYear')]
+    private Collection $fees;
+
+    /**
+     * @var Collection<int, AccountingMovement>
+     */
+    #[ORM\OneToMany(targetEntity: AccountingMovement::class, mappedBy: 'schoolYear')]
+    private Collection $accountingMovements;
+
     public function __construct()
     {
         $this->startDate = new \DateTime();
         $this->students = new ArrayCollection();
+        $this->fees = new ArrayCollection();
+        $this->accountingMovements = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -147,6 +161,66 @@ class SchoolYear
             // set the owning side to null (unless already changed)
             if ($student->getSchoolYear() === $this) {
                 $student->setSchoolYear(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Fee>
+     */
+    public function getFees(): Collection
+    {
+        return $this->fees;
+    }
+
+    public function addFee(Fee $fee): static
+    {
+        if (!$this->fees->contains($fee)) {
+            $this->fees->add($fee);
+            $fee->setSchoolYear($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFee(Fee $fee): static
+    {
+        if ($this->fees->removeElement($fee)) {
+            // set the owning side to null (unless already changed)
+            if ($fee->getSchoolYear() === $this) {
+                $fee->setSchoolYear(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AccountingMovement>
+     */
+    public function getAccountingMovements(): Collection
+    {
+        return $this->accountingMovements;
+    }
+
+    public function addAccountingMovement(AccountingMovement $accountingMovement): static
+    {
+        if (!$this->accountingMovements->contains($accountingMovement)) {
+            $this->accountingMovements->add($accountingMovement);
+            $accountingMovement->setSchoolYear($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAccountingMovement(AccountingMovement $accountingMovement): static
+    {
+        if ($this->accountingMovements->removeElement($accountingMovement)) {
+            // set the owning side to null (unless already changed)
+            if ($accountingMovement->getSchoolYear() === $this) {
+                $accountingMovement->setSchoolYear(null);
             }
         }
 
