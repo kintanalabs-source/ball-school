@@ -57,7 +57,11 @@ const Students = () => {
   };
 
   const loadClasses = () => {
-    ClasseService.getAll()
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    const yearIRI = selectedYear?.['@id'] || (selectedYear?.id ? `/api/school_years/${selectedYear.id}` : null);
+    const params = yearIRI ? { schoolYear: yearIRI } : {};
+
+    ClasseService.getAll(params)
       .then(res => {
         const items = res.data?.['member'] || res.data?.['hydra:member'] || (Array.isArray(res.data) ? res.data : []);
         setClasses(items);
@@ -177,7 +181,11 @@ const Students = () => {
   };
   const handleCreateClasse = (e) => {
     e.preventDefault();
-    ClasseService.create(classeData)
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    const yearIRI = selectedYear?.['@id'] || `/api/school_years/${selectedYear.id}`;
+
+    const data = { ...classeData, schoolYear: yearIRI };
+    ClasseService.create(data)
       .then((res) => {
         setIsClasseModalOpen(false);
         setClasseData({ name: '', tuitionPrice: 50000 });
@@ -247,6 +255,10 @@ const Students = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Gestion des Élèves</h2>
+          <p className="text-sm text-blue-600 font-medium">Année scolaire : {JSON.parse(localStorage.getItem('selectedSchoolYear'))?.label}</p>
+        </div>
         <div className="relative w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
@@ -257,15 +269,13 @@ const Students = () => {
             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => { setIsEditing(false); setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '', matricule: '', registrationFee: 0 }); setIsModalOpen(true); }}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-          >
-            <Plus size={20} />
-            Ajouter un élève
-          </button>
-        </div>
+        <button
+          onClick={() => { setIsEditing(false); setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '', matricule: '', registrationFee: 0 }); setIsModalOpen(true); }}
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+        >
+          <Plus size={20} />
+          Ajouter un élève
+        </button>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -595,7 +605,7 @@ const Students = () => {
       </Modal>
 
       {/* Modal Ajouter Classe (Sur le champ) */}
-      <Modal isOpen={isClasseModalOpen} onClose={() => setIsClasseModalOpen(false)} title="Nouvelle Classe">
+      <Modal isOpen={isClasseModalOpen} onClose={() => setIsClasseModalOpen(false)} title={`Nouvelle Classe (${JSON.parse(localStorage.getItem('selectedSchoolYear'))?.label})`}>
         <form onSubmit={handleCreateClasse} className="space-y-4">
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nom de la classe</label>

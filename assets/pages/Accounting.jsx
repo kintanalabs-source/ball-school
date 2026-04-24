@@ -91,15 +91,21 @@ const Accounting = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
           <p className="text-xs text-gray-400 font-bold uppercase">Solde Initial ({selectedYear?.label})</p>
           <h3 className="text-xl font-bold text-gray-700 mt-1">{initialBalance.toLocaleString()} {config.currency}</h3>
         </div>
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-          <p className="text-xs text-gray-400 font-bold uppercase">Flux de l'année ({selectedYear?.label})</p>
-          <h3 className={`text-xl font-bold mt-1 ${totalEntries >= totalExits ? 'text-green-600' : 'text-red-600'}`}>
-            {(totalEntries - totalExits).toLocaleString()} {config.currency}
+          <p className="text-xs text-green-500 font-bold uppercase">Total Recettes</p>
+          <h3 className="text-xl font-bold text-green-600 mt-1">
+            +{totalEntries.toLocaleString()} {config.currency}
+          </h3>
+        </div>
+        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+          <p className="text-xs text-red-500 font-bold uppercase">Total Dépenses</p>
+          <h3 className="text-xl font-bold text-red-600 mt-1">
+            -{totalExits.toLocaleString()} {config.currency}
           </h3>
         </div>
         <div className="bg-white p-6 rounded-xl border-l-4 border-blue-500 shadow-sm">

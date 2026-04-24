@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/welcome.css';
 import { config } from '../utils/config';
+import { NewsService } from '../utils/api';
 
 const Welcome = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [recentNews, setRecentNews] = useState([]);
 
   useEffect(() => {
     // Gestion du scroll pour la navbar
@@ -15,24 +17,36 @@ const Welcome = () => {
       setIsScrolled(window.scrollY > 40);
     };
 
-    // Animation de révélation au scroll
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Chargement des actualités
+  useEffect(() => {
+    NewsService.getAll()
+      .then(res => {
+        const data = res.data['member'] || res.data['hydra:member'] || (Array.isArray(res.data) ? res.data : []);
+        // On prend les 3 dernières actualités (triées par date décroissante)
+        const sorted = [...data].sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)).slice(0, 3);
+        setRecentNews(sorted);
+      })
+      .catch(err => console.error("Erreur lors du chargement des news:", err));
+  }, []);
+
+  // Animation de révélation au scroll (se déclenche aussi quand les news arrivent)
+  useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((e, i) => {
         if (e.isIntersecting) {
-          setTimeout(() => e.target.classList.add('visible'), i * 80);
+          setTimeout(() => e.target.classList.add('visible'), 100);
           observer.unobserve(e.target);
         }
       });
     }, { threshold: 0.12 });
 
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-    window.addEventListener('scroll', handleScroll);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      observer.disconnect();
-    };
-  }, []);
+    document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, [recentNews]);
 
   const goToStep = (n) => setCurrentStep(n);
   const submitForm = () => setIsSubmitted(true);
@@ -55,10 +69,11 @@ const Welcome = () => {
         <ul className={`nav-links ${isMenuOpen ? 'open' : ''}`} id="navLinks">
           <li><a href="#about" onClick={() => setIsMenuOpen(false)}>À propos</a></li>
           <li><a href="#programmes" onClick={() => setIsMenuOpen(false)}>Programmes</a></li>
+          <li><a href="#news" onClick={() => setIsMenuOpen(false)}>Actualités</a></li>
           <li><a href="#equipe" onClick={() => setIsMenuOpen(false)}>Équipe</a></li>
           <li><a href="#inscription" onClick={() => setIsMenuOpen(false)}>Inscription</a></li>
           <li><a href="#contact" onClick={() => setIsMenuOpen(false)}>Contact</a></li>
-          <li><a href="#inscription" className="nav-cta" onClick={() => setIsMenuOpen(false)}>S'inscrire</a></li>
+          {/* <li><a href="#inscription" className="nav-cta" onClick={() => setIsMenuOpen(false)}>S'inscrire</a></li> */}
           <li><Link to="/login" className="nav-login-cta">Se connecter</Link></li>
         </ul>
         <div className="hamburger" id="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -71,6 +86,7 @@ const Welcome = () => {
         <div className="hero-content">
           <div className="hero-badge"><span>✝</span> Établissement Chrétien Agréé</div>
           <h1>Former des âmes,<em>façonner l'avenir.</em></h1>
+          {/* <p className="text-xs uppercase tracking-[0.3em] opacity-40 mb-6 font-bold">Propulsé par <a href="https://kintana-labs.com/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors underline decoration-dotted underline-offset-4">Kintana Labs</a></p> */}
           <p>Une éducation enracinée dans la foi chrétienne, l'excellence académique et le développement intégral de chaque enfant — corps, âme et esprit.</p>
           <div className="hero-actions">
             <a href="#inscription" className="btn-primary">Inscrire mon enfant</a>
@@ -223,7 +239,7 @@ const Welcome = () => {
         </div>
       </section>
 
-      {/* ───── INSCRIPTION ───── */}
+      {/* ───── INSCRIPTION ─────
       <section id="inscription">
         <div className="inscription-wrapper">
           <div className="inscription-info reveal">
@@ -309,7 +325,42 @@ const Welcome = () => {
             )}
           </div>
         </div>
-      </section>
+      </section> */}
+
+      {/* ───── ACTUALITÉS ───── */}
+      {recentNews.length > 0 && (
+        <section id="news" style={{ background: '#0d1b2a' }}>
+          <div className="section-header">
+            <span className="section-tag">Communication</span>
+            <h2 className="section-title" style={{ color: 'var(--white)' }}>Dernières Actualités</h2>
+            <p className="section-sub" style={{ color: 'rgba(255,255,255,0.7)' }}>Restez informé des événements et annonces importantes de notre établissement.</p>
+          </div>
+          <div className="news-grid reveal" style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+            gap: '30px', 
+            maxWidth: '1200px', 
+            margin: '0 auto', 
+            padding: '0 20px' 
+          }}>
+            {recentNews.map((item) => (
+              <div key={item.id} className="news-card" style={{ background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
+                {item.image && (
+                  <div style={{ height: '200px', overflow: 'hidden' }}>
+                    <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                )}
+                <div style={{ padding: '30px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '2px' }}>{item.category}</span>
+                  <h4 style={{ margin: '12px 0', fontSize: '1.25rem', fontWeight: '700', color: 'var(--navy)' }}>{item.title}</h4>
+                  <p style={{ fontSize: '0.95rem', color: '#6b7280', lineHeight: '1.7', display: '-webkit-box', WebkitLineClamp: '3', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.content}</p>
+                  <div style={{ marginTop: '25px', fontSize: '0.85rem', color: '#9ca3af', borderTop: '1px solid #f3f4f6', paddingTop: '15px' }}>Publié le {new Date(item.publishedAt).toLocaleDateString('fr-FR')}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ───── CONTACT ───── */}
       <section id="contact">
@@ -364,7 +415,10 @@ const Welcome = () => {
         <div className="footer-bottom">
           <p>© 2025 {config.schoolName} — Tous droits réservés</p>
           <div className="footer-cross">✝</div>
-          <p>Conçu avec ❤️ pour la gloire de Dieu</p>
+          <div className="flex flex-col items-center gap-2">
+            <p>Conçu avec ❤️ pour la gloire de Dieu</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] opacity-50">Signature du créateur : <a href="https://kintana-labs.com/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors underline decoration-dotted underline-offset-4">Kintana Labs</a></p>
+          </div>
         </div>
       </footer>
     </div>

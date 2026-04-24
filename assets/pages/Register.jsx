@@ -117,11 +117,11 @@ const Register = () => {
             </div>
           </div>
 
-          <button type="submit" className="login-submit" disabled={isLoading} style={{ marginTop: '20px' }}>
+          {/* <button type="submit" className="login-submit" disabled={isLoading} style={{ marginTop: '20px' }}>
             {isLoading ? "Création en cours..." : (
               <>S'inscrire <UserPlus size={18} /></>
             )}
-          </button>
+          </button> */}
         </form>
       </div>
     </div>
