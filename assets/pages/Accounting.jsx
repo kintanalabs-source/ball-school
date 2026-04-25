@@ -29,7 +29,10 @@ const Accounting = () => {
 
     AccountingService.getAll(params)
       .then(res => {
-        setMovements(res.data['member'] || res.data['hydra:member'] || []);
+        const data = res.data['member'] || res.data['hydra:member'] || [];
+        // Trier par date décroissante (le plus récent en haut)
+        const sorted = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
+        setMovements(sorted);
         setLoading(false);
       })
       .catch(err => {
@@ -126,7 +129,7 @@ const Accounting = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {movements.map((m) => (
+            {movements.slice(0, 10).map((m) => (
               <tr key={m.id} className="hover:bg-gray-50/50">
                 <td className="px-6 py-4 text-gray-500 text-sm">{new Date(m.date).toLocaleDateString()}</td>
                 <td className="px-6 py-4 font-medium text-gray-800">{m.label}</td>

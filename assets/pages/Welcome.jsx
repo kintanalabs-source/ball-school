@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import '../styles/welcome.css';
 import { config } from '../utils/config';
 import { NewsService } from '../utils/api';
+import fjkmImage from '../images/fjkm.jpeg';
 
 const Welcome = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -71,7 +72,7 @@ const Welcome = () => {
           <li><a href="#programmes" onClick={() => setIsMenuOpen(false)}>Programmes</a></li>
           <li><a href="#news" onClick={() => setIsMenuOpen(false)}>Actualités</a></li>
           <li><a href="#equipe" onClick={() => setIsMenuOpen(false)}>Équipe</a></li>
-          <li><a href="#inscription" onClick={() => setIsMenuOpen(false)}>Inscription</a></li>
+          {/* <li><a href="#inscription" onClick={() => setIsMenuOpen(false)}>Inscription</a></li> */}
           <li><a href="#contact" onClick={() => setIsMenuOpen(false)}>Contact</a></li>
           {/* <li><a href="#inscription" className="nav-cta" onClick={() => setIsMenuOpen(false)}>S'inscrire</a></li> */}
           <li><Link to="/login" className="nav-login-cta">Se connecter</Link></li>
@@ -83,13 +84,14 @@ const Welcome = () => {
 
       {/* ───── HERO ───── */}
       <section className="hero" id="home">
+        <div className="hero-container">
         <div className="hero-content">
           <div className="hero-badge"><span>✝</span> Établissement Chrétien Agréé</div>
           <h1>Former des âmes,<em>façonner l'avenir.</em></h1>
           {/* <p className="text-xs uppercase tracking-[0.3em] opacity-40 mb-6 font-bold">Propulsé par <a href="https://kintana-labs.com/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors underline decoration-dotted underline-offset-4">Kintana Labs</a></p> */}
           <p>Une éducation enracinée dans la foi chrétienne, l'excellence académique et le développement intégral de chaque enfant — corps, âme et esprit.</p>
           <div className="hero-actions">
-            <a href="#inscription" className="btn-primary">Inscrire mon enfant</a>
+            {/* <a href="#inscription" className="btn-primary">Inscrire mon enfant</a> */}
             <a href="#programmes" className="btn-outline">
               <span>▶</span> Découvrir nos programmes
             </a>
@@ -103,6 +105,10 @@ const Welcome = () => {
             <div className="stat-divider"></div>
             <div><strong>40+</strong><p>Enseignants dévoués</p></div>
           </div>
+        </div>
+        <div className="hero-visual-main">
+          <img src={fjkmImage} alt="FJKM School" className="hero-main-img" />
+        </div>
         </div>
       </section>
 

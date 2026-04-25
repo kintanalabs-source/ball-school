@@ -32,7 +32,8 @@ const Students = () => {
     email: '',
     classe: '',
     matricule: '',
-    registrationFee: 0
+    registrationFee: 0,
+    image: ''
   });
 
   const [classeData, setClasseData] = useState({
@@ -76,9 +77,24 @@ const Students = () => {
 
   const openAddModal = () => {
     setIsEditing(false);
-    setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '', matricule: '', registrationFee: 0 });
+    setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '', matricule: '', registrationFee: 0, image: '' });
     loadClasses(); // Reload classes when opening modal
     setIsModalOpen(true);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2000000) { // Limite à 2Mo
+        alert("L'image est trop volumineuse (max 2Mo)");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, image: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const loadStudentUnpaidFees = (studentId) => {
@@ -129,7 +145,7 @@ const Students = () => {
     service.then(() => {
         setIsModalOpen(false);
         setIsEditing(false);
-        setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '', matricule: '', registrationFee: 0 });
+        setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '', matricule: '', registrationFee: 0, image: '' });
         loadStudents();
       })
       .catch(err => console.error(err));
@@ -208,7 +224,8 @@ const Students = () => {
         email: student.email || '',
         classe: student.classe?.['@id'] || '',
         matricule: student.matricule || '',
-        registrationFee: student.registrationFee || 0
+        registrationFee: student.registrationFee || 0,
+        image: student.image || ''
     });
     setIsModalOpen(true);
   };
@@ -270,7 +287,7 @@ const Students = () => {
           />
         </div>
         <button
-          onClick={() => { setIsEditing(false); setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '', matricule: '', registrationFee: 0 }); setIsModalOpen(true); }}
+          onClick={() => { setIsEditing(false); setFormData({ firstName: '', lastName: '', birthDate: '', gender: 'M', address: '', phoneNumber: '', email: '', classe: '', matricule: '', registrationFee: 0, image: '' }); setIsModalOpen(true); }}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
         >
           <Plus size={20} />
@@ -298,9 +315,13 @@ const Students = () => {
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600 uppercase">
-                      {student.firstName[0]}{student.lastName[0]}
-                    </div>
+                    {student.image ? (
+                      <img src={student.image} alt="" className="w-10 h-10 rounded-full object-cover border border-gray-100" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600 uppercase">
+                        {student.firstName[0]}{student.lastName[0]}
+                      </div>
+                    )}
                     <div>
                       <p className="font-semibold text-gray-800">{student.firstName} {student.lastName}</p>
                       <p className="text-xs text-gray-500">{student.matricule ? `Mat: ${student.matricule}` : `ID: #${student.id.toString().padStart(4, '0')}`}</p>
@@ -329,13 +350,6 @@ const Students = () => {
                         title="Voir détails"
                     >
                       <Eye size={18} />
-                    </button>
-                    <button 
-                        onClick={() => openPaymentModal(student)}
-                        className="p-2 text-gray-400 hover:text-green-600 transition-colors"
-                        title="Payer écolage"
-                    >
-                      <DollarSign size={18} />
                     </button>
                     <button 
                         onClick={() => openEdit(student)}
@@ -369,6 +383,23 @@ const Students = () => {
         title={isEditing ? "Modifier l'élève" : "Ajouter un nouvel élève"}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 mb-2">
+            <div className="relative group">
+              <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden border-2 border-white shadow-md">
+                {formData.image ? (
+                  <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <User size={40} className="text-blue-300" />
+                )}
+              </div>
+              <label className="absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 group-hover:opacity-100 rounded-full cursor-pointer transition-opacity text-xs font-bold uppercase">
+                Changer
+                <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+              </label>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-2 uppercase font-bold tracking-widest">Photo d'identité</p>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Matricule</label>
@@ -498,9 +529,13 @@ const Students = () => {
         {selectedStudent && (
           <div className="space-y-6">
             <div className="flex flex-col items-center gap-2">
-              <div className="w-24 h-24 rounded-full bg-blue-600 flex items-center justify-center text-3xl font-bold text-white shadow-lg uppercase">
-                {selectedStudent.firstName[0]}{selectedStudent.lastName[0]}
-              </div>
+              {selectedStudent.image ? (
+                <img src={selectedStudent.image} alt="" className="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white" />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-blue-600 flex items-center justify-center text-3xl font-bold text-white shadow-lg uppercase">
+                  {selectedStudent.firstName[0]}{selectedStudent.lastName[0]}
+                </div>
+              )}
               <h4 className="text-2xl font-bold text-gray-800">{selectedStudent.firstName} {selectedStudent.lastName}</h4>
               <p className="text-blue-600 font-medium">Inscrit le {new Date(selectedStudent.registrationDate).toLocaleDateString()}</p>
             </div>

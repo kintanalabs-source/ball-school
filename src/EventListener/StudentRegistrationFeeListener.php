@@ -26,7 +26,7 @@ class StudentRegistrationFeeListener
     public function postUpdate(Student $student, PostUpdateEventArgs $event): void
     {
         // Seulement si le registrationFee a changé
-        $changeSet = $event->getEntityManager()->getUnitOfWork()->getEntityChangeSet($student);
+        $changeSet = $event->getObjectManager()->getUnitOfWork()->getEntityChangeSet($student);
 
         if (isset($changeSet['registrationFee']) && $changeSet['registrationFee'][0] !== $changeSet['registrationFee'][1]) {
             $this->createOrUpdateRegistrationFeeMovement($student);
