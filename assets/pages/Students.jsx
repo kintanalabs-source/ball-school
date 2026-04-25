@@ -212,22 +212,27 @@ const Students = () => {
   };
 
   const openEdit = (student) => {
-    setSelectedStudent(student);
     setIsEditing(true);
-    setFormData({
-        firstName: student.firstName,
-        lastName: student.lastName,
-        birthDate: student.birthDate ? student.birthDate.split('T')[0] : '',
-        gender: student.gender,
-        address: student.address || '',
-        phoneNumber: student.phoneNumber || '',
-        email: student.email || '',
-        classe: student.classe?.['@id'] || '',
-        matricule: student.matricule || '',
-        registrationFee: student.registrationFee || 0,
-        image: student.image || ''
-    });
     setIsModalOpen(true);
+
+    // Récupérer les données complètes pour avoir l'image si absente de la liste
+    StudentService.get(student.id).then(res => {
+        const fullStudent = res.data;
+        setSelectedStudent(fullStudent);
+        setFormData({
+            firstName: fullStudent.firstName,
+            lastName: fullStudent.lastName,
+            birthDate: fullStudent.birthDate ? fullStudent.birthDate.split('T')[0] : '',
+            gender: fullStudent.gender,
+            address: fullStudent.address || '',
+            phoneNumber: fullStudent.phoneNumber || '',
+            email: fullStudent.email || '',
+            classe: fullStudent.classe?.['@id'] || '',
+            matricule: fullStudent.matricule || '',
+            registrationFee: fullStudent.registrationFee || 0,
+            image: fullStudent.image || ''
+        });
+    }).catch(err => console.error("Erreur lors du chargement de l'élève:", err));
   };
 
   const handleDelete = (id) => {
@@ -237,9 +242,14 @@ const Students = () => {
   };
 
   const openDetail = (student) => {
-    setSelectedStudent(student);
     setIsDetailOpen(true);
+    setSelectedStudent(student); // On affiche les infos de base immédiatement
     setStudentFeesForDetail([]); // Réinitialiser la liste avant de charger
+
+    // Fetch de l'élève complet pour l'image
+    StudentService.get(student.id).then(res => {
+      setSelectedStudent(res.data);
+    }).catch(err => console.error("Erreur fetch image:", err));
 
     // Récupérer l'année scolaire sélectionnée dans le localStorage
     const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));

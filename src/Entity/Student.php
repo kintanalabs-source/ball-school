@@ -97,6 +97,10 @@ class Student
     #[Groups(['student:read', 'student:write'])]
     private ?int $registrationFee = null;
 
+    #[ORM\Column(type: Types::TEXT, length: 16777215, nullable: true)] // Utilise MEDIUMTEXT (16Mo) au lieu de TEXT (64Ko)
+    #[Groups(['student:read', 'student:write'])]
+    private ?string $image = null;
+
     #[ORM\ManyToOne(inversedBy: 'students')]
     #[Groups(['student:read', 'student:write'])]
     private ?SchoolYear $schoolYear = null;
@@ -276,6 +280,18 @@ class Student
     public function setRegistrationFee(?int $registrationFee): static
     {
         $this->registrationFee = $registrationFee;
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
 
         return $this;
     }

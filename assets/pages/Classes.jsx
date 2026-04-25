@@ -104,9 +104,14 @@ const Classes = () => {
   };
 
   const openStudentDetail = (student) => {
-    setSelectedStudent(student);
     setIsStudentDetailOpen(true);
+    setSelectedStudent(student); 
     setStudentFeesForDetail([]);
+
+    // Récupérer l'élève complet pour l'image
+    StudentService.get(student.id).then(res => {
+      setSelectedStudent(res.data);
+    }).catch(err => console.error("Erreur fetch image:", err));
 
     // Récupérer l'année scolaire sélectionnée dans le localStorage
     const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
