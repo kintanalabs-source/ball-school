@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { AccountingService } from '../utils/api';
+import { AccountingService, SchoolYearService } from '../utils/api';
 import { config } from '../utils/config';
-import { TrendingUp, TrendingDown, Plus, Download } from 'lucide-react';
+import { TrendingUp, TrendingDown, Plus, Download, Lock } from 'lucide-react';
 import Modal from '../components/Modal';
 
 const Accounting = () => {
@@ -9,11 +9,14 @@ const Accounting = () => {
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const allCategories = ['Régularisation écolage', ...config.categories.accounting];
+
   const [formData, setFormData] = useState({
     label: '',
     amount: '',
     type: 'entry',
-    category: config.categories.accounting[0]
+    category: allCategories[0]
   });
 
   const loadMovements = () => {
@@ -58,10 +61,38 @@ const Accounting = () => {
     AccountingService.create(data)
       .then(() => {
         setIsModalOpen(false);
-        setFormData({ label: '', amount: '', type: 'entry', category: config.categories.accounting[0] });
+        setFormData({ label: '', amount: '', type: 'entry', category: allCategories[0] });
         loadMovements();
       })
       .catch(err => console.error(err));
+  };
+
+  const handleCloseAccount = async () => {
+    const confirmMsg = `Confirmer la clôture de l'année ${selectedYear.label} ?\n\n` +
+                       `- Budget de fonctionnement : ${totalEntries.toLocaleString()} ${config.currency}\n` +
+                       `- Solde Final à transférer : ${currentBalance.toLocaleString()} ${config.currency}\n\n` +
+                       `Cette action est irréversible.`;
+
+    if (window.confirm(confirmMsg)) {
+      try {
+        // On envoie seulement isClosed: true. 
+        // Le SchoolYearCloseProcessor sur le serveur fera tout le reste.
+        const response = await SchoolYearService.update(selectedYear.id, { isClosed: true });
+        
+        // On récupère l'objet mis à jour par le serveur (avec les calculs faits)
+        const updatedYear = response.data;
+
+        // Mise à jour locale
+        localStorage.setItem('selectedSchoolYear', JSON.stringify(updatedYear));
+        setSelectedYear(updatedYear);
+
+        alert("Compte clôturé avec succès. Le solde a été transféré à l'exercice suivant.");
+        loadMovements();
+      } catch (err) {
+        console.error("Erreur lors de la clôture:", err);
+        alert("Une erreur est survenue lors de la clôture du compte.");
+      }
+    }
   };
 
   const totalEntries = movements.filter(m => m.type === 'entry').reduce((acc, curr) => acc + curr.amount, 0);
@@ -80,17 +111,28 @@ const Accounting = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold text-gray-800">Mouvements Comptables</h2>
         <div className="flex gap-3">
+          {!selectedYear?.isClosed && (
+            <button
+              onClick={handleCloseAccount}
+              className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
+            >
+              <Lock size={18} />
+              <span className="whitespace-nowrap">Fermer le compte</span>
+            </button>
+          )}
           <button className="flex items-center gap-2 border border-gray-200 bg-white px-4 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors text-gray-600">
             <Download size={18} />
             Exporter
           </button>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-          >
-            <Plus size={20} />
-            Nouvelle Opération
-          </button>
+          {!selectedYear?.isClosed && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              <Plus size={20} />
+              Nouvelle Opération
+            </button>
+          )}
         </div>
       </div>
 
@@ -185,7 +227,7 @@ const Accounting = () => {
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
-                {config.categories.accounting.map(cat => (
+                {allCategories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>

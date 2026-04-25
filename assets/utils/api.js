@@ -49,6 +49,9 @@ export const SchoolYearService = {
   getAll: () => api.get('/school_years'),
   get: (id) => api.get(`/school_years/${id}`),
   create: (data) => api.post('/school_years', data),
+  update: (id, data) => api.patch(`/school_years/${id}`, data, {
+    headers: { 'Content-Type': 'application/merge-patch+json' }
+  }),
 };
 
 export const NewsService = {
