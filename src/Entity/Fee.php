@@ -49,7 +49,7 @@ class Fee
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'fees')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(['fee:read', 'fee:write'])]
     private ?Student $student = null;
 
@@ -73,12 +73,12 @@ class Fee
     #[Groups(['fee:read', 'fee:write'])]
     private ?\DateTimeInterface $paymentDate = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, nullable: true)]
     #[Groups(['fee:read', 'fee:write'])]
     private ?string $type = 'ecolage'; // ecolage, inscription, reinscription
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)] // L'année scolaire est obligatoire pour un écolage
+    #[ORM\JoinColumn(nullable: true)] // Changé en true pour débloquer la migration avec des données existantes
     #[Groups(['fee:read', 'fee:write'])]
     private ?SchoolYear $schoolYear = null;
 

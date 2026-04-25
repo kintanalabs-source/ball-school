@@ -4,63 +4,42 @@ namespace App\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Dto\FeePaymentInput;
-use App\Entity\AccountingMovement;
 use App\Entity\Fee;
-use App\Event\FeePaidEvent;
-use App\Repository\FeeRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FeePaymentProcessor implements ProcessorInterface
 {
     public function __construct(
-        private FeeRepository $feeRepository,
-        private EntityManagerInterface $entityManager,
-        private EventDispatcherInterface $eventDispatcher
+        private EntityManagerInterface $entityManager
     ) {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
-        if (!$data instanceof FeePaymentInput) {
-            return $data;
+        if (!isset($data['feeIds']) || !is_array($data['feeIds'])) {
+            throw new BadRequestHttpException("La liste des identifiants (feeIds) est manquante.");
         }
 
-        $fees = [];
-        $paymentDate = $data->getPaymentDate() ? new \DateTime($data->getPaymentDate()) : new \DateTime();
+        $feeRepository = $this->entityManager->getRepository(Fee::class);
 
-        foreach ($data->getFeeIds() as $id) {
-            $fee = $this->feeRepository->find($id);
+        foreach ($data['feeIds'] as $id) {
+            $numericId = (int) $id;
+            
+            if ($numericId <= 0) {
+                continue;
+            }
+
+            $fee = $feeRepository->find($numericId);
+
             if (!$fee) {
-                throw new NotFoundHttpException(sprintf('Fee with ID %d not found', $id));
+                throw new NotFoundHttpException("L'écolage avec l'ID $numericId n'existe pas.");
             }
 
-            if (!$fee->isPaid()) {
-                $fee->setIsPaid(true);
-                $fee->setPaymentDate($paymentDate);
-
-                // Création automatique du mouvement comptable
-                $movement = new AccountingMovement();
-                $student = $fee->getStudent();
-                $movement->setLabel(sprintf('Écolage %s %s - %s %s', $fee->getMonth(), $fee->getYear(), $student->getFirstName(), $student->getLastName()));
-                $movement->setAmount($fee->getAmount());
-                $movement->setType('entry');
-                $movement->setCategory('Écolage');
-                $movement->setDate($paymentDate);
-                $movement->setSchoolYear($fee->getSchoolYear());
-                $movement->setStudent($student);
-                
-                $this->entityManager->persist($movement);
-                $fees[] = $fee;
-            }
+            $fee->setIsPaid(true);
+            $fee->setPaymentDate(new \DateTime());
         }
 
-        if (!empty($fees)) {
-            $this->entityManager->flush();
-            $this->eventDispatcher->dispatch(new FeePaidEvent($fees), FeePaidEvent::NAME);
-        }
-
-        return $data;
+        $this->entityManager->flush();
     }
 }
