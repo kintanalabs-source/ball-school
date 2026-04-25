@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SchoolYearService } from '../utils/api';
 import { config } from '../utils/config';
-import { Calendar, Plus, ArrowRight, Wallet, History } from 'lucide-react';
+import { Calendar, Plus, ArrowRight, Wallet, History, Lock } from 'lucide-react';
 
 const SchoolYears = () => {
   const [years, setYears] = useState([]);
@@ -92,6 +92,11 @@ const SchoolYears = () => {
                 <Calendar size={24} />
               </div>
               <h3 className="text-xl font-bold text-gray-800">{year.label}</h3>
+              {year.isClosed && (
+                <span className="ml-auto bg-red-100 text-red-600 p-1.5 rounded-full" title="Compte clôturé">
+                  <Lock size={14} />
+                </span>
+              )}
             </div>
 
             <div className="space-y-3">
