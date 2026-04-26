@@ -120,10 +120,7 @@ const Accounting = () => {
               <span className="whitespace-nowrap">Fermer le compte</span>
             </button>
           )}
-          <button className="flex items-center gap-2 border border-gray-200 bg-white px-4 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors text-gray-600">
-            <Download size={18} />
-            Exporter
-          </button>
+         
           {!selectedYear?.isClosed && (
             <button
               onClick={() => setIsModalOpen(true)}
