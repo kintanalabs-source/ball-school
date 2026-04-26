@@ -8,12 +8,69 @@ const api = axios.create({
   }
 });
 
-export const AuthService = {
-  login: (credentials) => api.post('/login', credentials),
-  register: (data) => api.post('/register', data),
+// ============ LOADING INTERCEPTORS ============
+// Ces interceptors gèrent automatiquement le loader pour chaque appel API
+// Pas besoin de modifier les services existants !
+
+let loadingCallbacks = null;
+
+// Enregistrer les fonctions de callback pour le loading
+export const setLoadingCallbacks = (callbacks) => {
+  loadingCallbacks = callbacks;
 };
 
+// Interceptor request - montre le loader
+api.interceptors.request.use(
+  (config) => {
+    if (loadingCallbacks?.startLoading) {
+      const method = config.method?.toUpperCase() || 'GET';
+      let message = 'Chargement...';
+      
+      // Message personnalisé selon la méthode
+      switch (method) {
+        case 'POST':
+          message = 'Création en cours...';
+          break;
+        case 'PATCH':
+        case 'PUT':
+          message = 'Mise à jour...';
+          break;
+        case 'DELETE':
+          message = 'Suppression...';
+          break;
+        default:
+          message = 'Chargement des données...';
+      }
+      
+      loadingCallbacks.startLoading(message);
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor response - cache le loader
+api.interceptors.response.use(
+  (response) => {
+    if (loadingCallbacks?.stopLoading) {
+      loadingCallbacks.stopLoading();
+    }
+    return response;
+  },
+  (error) => {
+    if (loadingCallbacks?.stopLoading) {
+      loadingCallbacks.stopLoading();
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const StudentService = {
+  // ============ API SERVICES ============
+  login: (credentials) => api.post('/login', credentials),
+  register: (data) => api.post('/register', data),
   getAll: (params) => api.get('/students', { params }),
   get: (id) => api.get(`/students/${id}`),
   create: (data) => api.post('/students', data),

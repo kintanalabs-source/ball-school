@@ -4,9 +4,11 @@ namespace App\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Dto\FeePaymentInput;
 use App\Entity\Fee;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException as ExceptionBadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FeePaymentProcessor implements ProcessorInterface
@@ -17,13 +19,18 @@ class FeePaymentProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
-        if (!isset($data['feeIds']) || !is_array($data['feeIds'])) {
-            throw new BadRequestHttpException("La liste des identifiants (feeIds) est manquante.");
+        if ( !($data instanceof FeePaymentInput)) {
+            throw new ExceptionBadRequestHttpException("La liste des identifiants (feeIds) est manquante.");
+        }
+
+        if (empty($data->getFeeIds())) {
+            throw new ExceptionBadRequestHttpException("La liste des identifiants (feeIds) est vide.");
         }
 
         $feeRepository = $this->entityManager->getRepository(Fee::class);
 
-        foreach ($data['feeIds'] as $id) {
+        $feeIds = $data->getFeeIds();
+        foreach ($feeIds as $id) {
             $numericId = (int) $id;
             
             if ($numericId <= 0) {

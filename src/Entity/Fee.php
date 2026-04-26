@@ -36,7 +36,8 @@ use Symfony\Component\Serializer\Attribute\SerializedName;
         )
     ],
     normalizationContext: ['groups' => ['fee:read']],
-    denormalizationContext: ['groups' => ['fee:write']]
+    denormalizationContext: ['groups' => ['fee:write']],
+    order: ['year' => 'ASC']
 )]
 #[ApiFilter(SearchFilter::class, properties: ['student.id' => 'exact', 'month' => 'exact', 'year' => 'exact', 'schoolYear' => 'exact'])]
 #[ApiFilter(BooleanFilter::class, properties: ['isPaid'])]
