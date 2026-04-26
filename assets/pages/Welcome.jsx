@@ -59,7 +59,7 @@ const Welcome = () => {
   return (
     <div className="welcome-wrapper">
       {/* ───── NAV ───── */}
-      <nav id="navbar" className={isScrolled ? 'scrolled' : ''}>
+      <nav id="navbar" className={`${isScrolled ? 'scrolled' : ''} ${isMenuOpen ? 'nav-open' : ''}`}>
         <div className="nav-logo">
           <div className="nav-logo-icon">✝</div>
           <div className="nav-logo-text">
@@ -77,7 +77,7 @@ const Welcome = () => {
           {/* <li><a href="#inscription" className="nav-cta" onClick={() => setIsMenuOpen(false)}>S'inscrire</a></li> */}
           <li><Link to="/login" className="nav-login-cta">Se connecter</Link></li>
         </ul>
-        <div className="hamburger" id="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+        <div className={`hamburger ${isMenuOpen ? 'active' : ''}`} id="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           <span></span><span></span><span></span>
         </div>
       </nav>

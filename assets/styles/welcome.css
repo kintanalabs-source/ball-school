@@ -107,6 +107,10 @@
 
     .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 6px; }
     .hamburger span { width: 24px; height: 2px; background: var(--white); border-radius: 2px; transition: all .3s; }
+    
+    .hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
     /* ───────────── HERO ───────────── */
     .hero {
@@ -717,16 +721,13 @@
     }
     .reveal.visible { opacity: 1; transform: none; }
 
-    /* ───────────── RESPONSIVE — TABLET (≤ 1024px) ───────────── */
-    @media (max-width: 1024px) {
-      .about-grid { gap: 48px; }
-      .inscription-wrapper { gap: 48px; }
-      .footer-top { gap: 40px; }
-      .hero-stats { gap: 32px; }
-    }
+    /* ───────────── RESPONSIVE — TABLET & MOBILE (≤ 1100px) ───────────── */
+    @media (max-width: 1100px) {
+      .about-grid { gap: 40px; }
+      .inscription-wrapper { gap: 40px; }
+      .footer-top { gap: 36px; }
+      .hero-stats { gap: 24px; }
 
-    /* ───────────── RESPONSIVE — PHABLET / SMALL TABLET (≤ 900px) ───────────── */
-    @media (max-width: 900px) {
       .hero-container {
         grid-template-columns: 1fr;
         gap: 40px;
@@ -737,11 +738,13 @@
 
       /* Nav mobile */
       .nav-links {
-        display: none; flex-direction: column; gap: 0;
-        position: fixed; top: 72px; left: 0; right: 0; bottom: 0;
+        display: none; flex-direction: column; gap: 0; align-items: flex-start;
+        position: fixed; top: 72px; left: 0; right: 0;
         background: var(--navy); padding: 24px 6%;
-        border-top: 1px solid var(--border); overflow-y: auto;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
         z-index: 999;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
       }
       .nav-links.open { display: flex; } /* Keep existing flex behavior */
       .nav-links li { width: 100%; }
