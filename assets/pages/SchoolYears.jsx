@@ -32,7 +32,7 @@ const SchoolYears = () => {
   const handleSelectYear = (year) => {
     // On stocke l'année entière pour avoir accès au libellé et à l'ID partout
     localStorage.setItem('selectedSchoolYear', JSON.stringify(year));
-    navigate('/dashboard');
+    navigate('/admin/dashboard');
   };
 
   const handleCreateNewYear = () => {
@@ -53,7 +53,7 @@ const SchoolYears = () => {
     SchoolYearService.create(newYearData)
       .then(res => {
         localStorage.setItem('selectedSchoolYear', JSON.stringify(res.data));
-        navigate('/dashboard');
+        navigate('/admin/dashboard');
       })
       .catch(err => alert("Erreur lors de la création de l'année."));
   };

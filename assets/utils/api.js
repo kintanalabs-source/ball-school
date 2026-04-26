@@ -5,7 +5,9 @@ const api = axios.create({
   headers: {
     'Accept': 'application/ld+json',
     'Content-Type': 'application/json'
-  }
+  },
+  // Important pour le stateful : envoyer les cookies
+  withCredentials: true
 });
 
 // ============ LOADING INTERCEPTORS ============
@@ -51,7 +53,7 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor response - cache le loader
+// Interceptor response - cache le loader (stateful - pas de token JWT)
 api.interceptors.response.use(
   (response) => {
     if (loadingCallbacks?.stopLoading) {
@@ -63,15 +65,29 @@ api.interceptors.response.use(
     if (loadingCallbacks?.stopLoading) {
       loadingCallbacks.stopLoading();
     }
+    
+    // En cas d'erreur 401, rediriger vers login
+    if (error.response?.status === 401) {
+      window.location.href = '/login';
+    }
+    
     return Promise.reject(error);
   }
 );
 
-export const StudentService = {
-  // ============ API SERVICES ============
+// Pas de token JWT en mode stateful - les sessions gèrent l'auth
+
+export const AuthService = {
   login: (credentials) => api.post('/login', credentials),
   register: (data) => api.post('/register', data),
-  getAll: (params) => api.get('/students', { params }),
+  logout: () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }
+};
+
+export const StudentService = {
+  getAll: () => api.get('/students'),
   get: (id) => api.get(`/students/${id}`),
   create: (data) => api.post('/students', data),
   update: (id, data) => api.patch(`/students/${id}`, data, {

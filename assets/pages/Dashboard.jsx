@@ -48,7 +48,7 @@ const Dashboard = () => {
     
     // Sécurité : Rediriger si aucune année n'est sélectionnée
     if (!selectedYear) {
-      navigate('/school-years');
+      navigate('/admin/school-years');
       return;
     }
 
@@ -84,7 +84,7 @@ const Dashboard = () => {
           <p className="text-blue-600 font-bold text-sm uppercase tracking-widest">Année Scolaire : {JSON.parse(localStorage.getItem('selectedSchoolYear'))?.label}</p>
         </div>
         <button 
-          onClick={() => navigate('/school-years')}
+          onClick={() => navigate('/admin/school-years')}
           className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
         >
           <ArrowLeft size={18} />

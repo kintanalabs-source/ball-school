@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, UserPlus, ArrowLeft, AlertCircle, Eye, EyeOff, User } from 'lucide-react';
 import '../styles/welcome.css';
-import { AuthService } from '../utils/api';
+import { AuthService, StudentService } from '../utils/api';
 import { config } from '../utils/config';
 
 const Register = () => {
@@ -117,11 +117,11 @@ const Register = () => {
             </div>
           </div>
 
-          {/* <button type="submit" className="login-submit" disabled={isLoading} style={{ marginTop: '20px' }}>
+          <button type="submit" className="login-submit" disabled={isLoading} style={{ marginTop: '20px' }}>
             {isLoading ? "Création en cours..." : (
               <>S'inscrire <UserPlus size={18} /></>
             )}
-          </button> */}
+          </button>
         </form>
       </div>
     </div>

@@ -8,11 +8,11 @@ export const config = {
   },
   currency: "Ar",
   navigation: [
-    { name: 'Tableau de bord', path: '/dashboard' },
-    { name: 'Élèves', path: '/students' },
-    { name: 'Écolage', path: '/fees' },
-    { name: 'Actualités', path: '/news' },
-    { name: 'Comptabilité', path: '/accounting' },
+    { name: 'Tableau de bord', path: '/admin/dashboard' },
+    { name: 'Élèves', path: '/admin/students' },
+    { name: 'Écolage', path: '/admin/fees' },
+    { name: 'Actualités', path: '/admin/news' },
+    { name: 'Comptabilité', path: '/admin/accounting' },
   ],
   feeTypes: ['ecolage', 'inscription', 'reinscription'],
   categories: {

@@ -15,12 +15,12 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
 
   const menuItems = [
-    { name: 'Tableau de bord', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Élèves', path: '/students', icon: Users },
-    { name: 'Classes', path: '/classes', icon: School },
-    { name: 'Écolage', path: '/fees', icon: CreditCard },
-    { name: 'Actualités', path: '/news', icon: Newspaper },
-    { name: 'Comptabilité', path: '/accounting', icon: Calculator },
+    { name: 'Tableau de bord', path: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Élèves', path: '/admin/students', icon: Users },
+    { name: 'Classes', path: '/admin/classes', icon: School },
+    { name: 'Écolage', path: '/admin/fees', icon: CreditCard },
+    { name: 'Actualités', path: '/admin/news', icon: Newspaper },
+    { name: 'Comptabilité', path: '/admin/accounting', icon: Calculator },
   ];
 
   return (

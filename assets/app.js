@@ -44,14 +44,14 @@ const App = () => {
                     <Route path="/register" element={<Register />} />
 
                     {/* Page de sélection d'année sans sidebar pour un effet "Portail" */}
-                    <Route path="/school-years" element={<SchoolYears />} />
+                    <Route path="/admin/school-years" element={<SchoolYears />} />
                     {/* Les autres routes sont enveloppées individuellement par le Layout pour afficher la sidebar */}
-                    <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-                    <Route path="/students" element={<Layout><Students /></Layout>} />
-                    <Route path="/classes" element={<Layout><Classes /></Layout>} />
-                    <Route path="/fees" element={<Layout><Fees /></Layout>} />
-                    <Route path="/news" element={<Layout><News /></Layout>} />
-                    <Route path="/accounting" element={<Layout><Accounting /></Layout>} />
+                    <Route path="/admin/dashboard" element={<Layout><Dashboard /></Layout>} />
+                    <Route path="/admin/students" element={<Layout><Students /></Layout>} />
+                    <Route path="/admin/classes" element={<Layout><Classes /></Layout>} />
+                    <Route path="/admin/fees" element={<Layout><Fees /></Layout>} />
+                    <Route path="/admin/news" element={<Layout><News /></Layout>} />
+                    <Route path="/admin/accounting" element={<Layout><Accounting /></Layout>} />
                 </Routes>
             </Router>
         </LoadingProvider>

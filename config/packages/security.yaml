@@ -18,25 +18,27 @@ security:
             lazy: true
             provider: app_user_provider
             
-            # Activation du login via JSON (pour React)
+            # Authentification stateful via JSON + Sessions
             json_login:
-                check_path: api_login
+                check_path: /api/login
                 username_path: email
                 password_path: password
 
+            # Activer les sessions pour maintenir l'état
+            context: session
+
             logout:
                 path: app_logout
-
-            # Activate different ways to authenticate:
-            # https://symfony.com/doc/current/security.html#the-firewall
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+                target: /login
+                invalidate_session: true
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/api/login, roles: PUBLIC_ACCESS, methods: [POST, GET] }
+        - { path: ^/register, roles: PUBLIC_ACCESS, methods: [POST, GET] }
+        - { path: ^/login, roles: PUBLIC_ACCESS, methods: [POST, GET] }
+        - { path: ^/api/register, roles: PUBLIC_ACCESS, methods: [POST] }
+        # - { path: ^/admin, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:

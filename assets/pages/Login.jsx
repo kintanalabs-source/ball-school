@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, LogIn, ArrowLeft, AlertCircle, Eye, EyeOff, UserPlus } from 'lucide-react';
 import '../styles/welcome.css';
-import { AuthService } from '../utils/api';
+import axios from 'axios';
 import { config } from '../utils/config';
 
 const Login = () => {
@@ -19,10 +19,18 @@ const Login = () => {
     setError('');
 
     try {
-      await AuthService.login({ email, password });
-      navigate('/school-years');
+      // Login stateful avec cookies de session
+      await axios.post('/api/login', 
+        { email, password },
+        { withCredentials: true }
+      );
+      
+      // Connexion réussie - la session Symfony est automatiquement créée
+      navigate('/admin/school-years');
     } catch (err) {
-      setError('Identifiants invalides ou problème de connexion.');
+      console.log(err);
+      const message = err.response?.data?.message || 'Identifiants invalides ou problème de connexion.';
+      setError(message);
       setIsLoading(false);
     }
   };
