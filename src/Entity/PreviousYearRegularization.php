@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\GetCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -16,6 +18,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     ],
     normalizationContext: ['groups' => ['reg:read']]
 )]
+#[ApiFilter(SearchFilter::class, properties: ['schoolYear' => 'exact'])]
 class PreviousYearRegularization
 {
     #[ORM\Id]
@@ -37,6 +40,11 @@ class PreviousYearRegularization
     #[Groups(['reg:read'])]
     private ?float $totalRemaining = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['reg:read'])]
+    private ?SchoolYear $schoolYear = null;
+
     public function getId(): ?int { return $this->id; }
 
     public function getStudent(): ?Student { return $this->student; }
@@ -50,4 +58,8 @@ class PreviousYearRegularization
     public function getTotalRemaining(): ?float { return $this->totalRemaining; }
 
     public function setTotalRemaining(float $totalRemaining): self { $this->totalRemaining = $totalRemaining; return $this; }
+
+    public function getSchoolYear(): ?SchoolYear { return $this->schoolYear; }
+
+    public function setSchoolYear(?SchoolYear $schoolYear): self { $this->schoolYear = $schoolYear; return $this; }
 }
