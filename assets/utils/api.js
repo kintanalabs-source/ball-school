@@ -87,7 +87,7 @@ export const AuthService = {
 };
 
 export const StudentService = {
-  getAll: () => api.get('/students'),
+  getAll: (params) => api.get('/students', { params }),
   get: (id) => api.get(`/students/${id}`),
   create: (data) => api.post('/students', data),
   update: (id, data) => api.patch(`/students/${id}`, data, {
@@ -98,7 +98,7 @@ export const StudentService = {
 };
 
 export const ClasseService = {
-  getAll: () => api.get('/classes'),
+  getAll: (params) => api.get('/classes', { params }),
   get: (id) => api.get(`/classes/${id}`),
   create: (data) => api.post('/classes', data),
   update: (id, data) => api.patch(`/classes/${id}`, data, {
@@ -119,7 +119,7 @@ export const FeeService = {
 };
 
 export const SchoolYearService = {
-  getAll: () => api.get('/school_years'),
+  getAll: (params) => api.get('/school_years', { params }),
   get: (id) => api.get(`/school_years/${id}`),
   create: (data) => api.post('/school_years', data),
   update: (id, data) => api.patch(`/school_years/${id}`, data, {
@@ -128,7 +128,7 @@ export const SchoolYearService = {
 };
 
 export const NewsService = {
-  getAll: () => api.get('/news'),
+  getAll: (params) => api.get('/news', { params }),
   create: (data) => api.post('/news', data),
 };
 
