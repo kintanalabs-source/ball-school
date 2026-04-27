@@ -59,7 +59,6 @@ class StudentRegistrationFeeListener
                 $movement->setStudent($student); // Lier le mouvement à l'étudiant
                 $this->entityManager->persist($movement);
             }
-            $this->entityManager->flush();
         }
     }
 }

@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 #[Route('/api')]
 class AuthController extends AbstractController
@@ -46,10 +47,18 @@ class AuthController extends AbstractController
     }
 
     #[Route('/login', name: 'api_login', methods: ['POST'])]
-    public function login(): JsonResponse
+    public function login(#[CurrentUser] ?User $user): JsonResponse
     {
-        // Cette méthode peut rester vide car Symfony intercepte 
-        // la requête automatiquement grâce au configurateur json_login dans security.yaml
-        return new JsonResponse(['message' => 'Connexion réussie']);
+        if (null === $user) {
+            return new JsonResponse([
+                'message' => 'Identifiants invalides. Veuillez vérifier votre email et mot de passe.'
+            ], 401);
+        }
+
+        return new JsonResponse([
+            'message' => 'Connexion réussie',
+            'user' => $user->getUserIdentifier(),
+            'roles' => $user->getRoles(),
+        ]);
     }
 }
