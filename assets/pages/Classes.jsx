@@ -83,17 +83,19 @@ const Classes = () => {
   };
 
   const openDetail = (classe) => {
+    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+    const yearIRI = selectedYear?.['@id'] || (selectedYear?.id ? `/api/school_years/${selectedYear.id}` : null);
+    
+    if (!yearIRI) return;
+
+    setClassStudents([]); // Vider la liste immédiatement pour éviter les flashs d'anciens élèves
     setSelectedClasse(classe);
     setIsDetailOpen(true);
-    setClassStudents([]);
-    
-    // Récupérer l'année scolaire sélectionnée dans le localStorage
-    const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
     
     // Filtrer par classe ET par année scolaire
     const params = { 
-        classe: classe['@id'],
-        schoolYear: selectedYear?.['@id'] || selectedYear?.id
+        classe: classe['@id'] || (classe.id ? `/api/classes/${classe.id}` : null),
+        schoolYear: yearIRI
     };
 
     StudentService.getAll(params)

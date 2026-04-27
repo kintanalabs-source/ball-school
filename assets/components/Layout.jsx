@@ -7,7 +7,8 @@ import {
   Newspaper,
   Calculator,
   School,
-  LogOut
+  LogOut,
+  History
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
@@ -20,6 +21,7 @@ const Layout = ({ children }) => {
     { name: 'Classes', path: '/admin/classes', icon: School },
     { name: 'Écolage', path: '/admin/fees', icon: CreditCard },
     { name: 'Actualités', path: '/admin/news', icon: Newspaper },
+    { name: 'Régularisation', path: '/admin/regularization', icon: History },
     { name: 'Comptabilité', path: '/admin/accounting', icon: Calculator },
   ];
 

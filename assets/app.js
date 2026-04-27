@@ -16,6 +16,7 @@ import SchoolYears from './pages/SchoolYears';
 import Fees from './pages/Fees';
 import News from './pages/News';
 import Accounting from './pages/Accounting';
+import Regularization from './pages/Regularization';
 
 // Composant interne qui enregistre les callbacks de loading
 const LoadingManager = () => {
@@ -51,6 +52,7 @@ const App = () => {
                     <Route path="/admin/classes" element={<Layout><Classes /></Layout>} />
                     <Route path="/admin/fees" element={<Layout><Fees /></Layout>} />
                     <Route path="/admin/news" element={<Layout><News /></Layout>} />
+                    <Route path="/admin/regularization" element={<Layout><Regularization /></Layout>} />
                     <Route path="/admin/accounting" element={<Layout><Accounting /></Layout>} />
                 </Routes>
             </Router>

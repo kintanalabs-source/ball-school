@@ -44,7 +44,15 @@ const Students = () => {
   const loadStudents = () => {
     setLoading(true);
     const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
-    const params = selectedYear ? { schoolYear: selectedYear['@id'] || selectedYear.id } : {};
+    const yearIRI = selectedYear?.['@id'] || (selectedYear?.id ? `/api/school_years/${selectedYear.id}` : null);
+    
+    if (!yearIRI) {
+      setStudents([]);
+      setLoading(false);
+      return;
+    }
+
+    const params = { schoolYear: yearIRI };
     
     StudentService.getAll(params)
       .then(res => {
@@ -136,10 +144,11 @@ const Students = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const selectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
-    const studentData = { ...formData, schoolYear: selectedYear['@id'] || `/api/school_years/${selectedYear.id}` };
+    const yearIRI = selectedYear?.['@id'] || `/api/school_years/${selectedYear?.id}`;
+    const studentData = { ...formData, schoolYear: yearIRI };
     
     const service = isEditing 
-        ? StudentService.update(selectedStudent.id, formData) 
+        ? StudentService.update(selectedStudent.id, studentData) 
         : StudentService.create(studentData);
     
     service.then(() => {
@@ -276,6 +285,11 @@ const Students = () => {
     `${student.firstName} ${student.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (student.classe?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const currentSelectedYear = JSON.parse(localStorage.getItem('selectedSchoolYear'));
+  if (!currentSelectedYear) {
+    return <div className="p-8 text-center text-red-500 font-bold">Veuillez sélectionner une année scolaire sur la page d'accueil.</div>;
+  }
 
   if (loading && students.length === 0) return <div className="p-8 text-center text-gray-500">Chargement...</div>;
 
