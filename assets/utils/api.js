@@ -137,4 +137,10 @@ export const AccountingService = {
   create: (data) => api.post('/accounting_movements', data),
 };
 
+export const RegularizationService = {
+  getAll: (params) => api.get('/previous_year_regularizations', { params }),
+  sync: (currentYearIri) => api.post('/regularizations/sync', { currentYear: currentYearIri }),
+  pay: (id, data) => api.post(`/regularizations/${id}/pay`, data),
+};
+
 export default api;

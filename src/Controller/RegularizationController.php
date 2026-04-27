@@ -25,7 +25,9 @@ class RegularizationController extends AbstractController
         }
 
         // 1. Trouver l'année actuelle et l'année précédente
-        $currentYearId = (int) filter_var($currentYearIri, FILTER_SANITIZE_NUMBER_INT);
+        // Extraction robuste de l'ID depuis l'IRI (/api/school_years/12 -> 12)
+        $currentYearId = (int) (str_contains($currentYearIri, '/') ? basename($currentYearIri) : $currentYearIri);
+        
         $currentYear = $em->getRepository(SchoolYear::class)->find($currentYearId);
         
         if (!$currentYear) {
@@ -41,9 +43,9 @@ class RegularizationController extends AbstractController
             ->getQuery()
             ->getOneOrNullResult();
 
-        // 2. Supprimer uniquement les régularisations liées à l'année actuelle 
-        // pour ne pas toucher aux données des autres années scolaires
-        $em->createQuery('DELETE FROM App\Entity\PreviousYearRegularization p WHERE p.schoolYear = :year')
+        // 2. NETTOYAGE PROFOND
+        // Supprimer les régularisations liées à l'année actuelle OU celles qui n'ont pas d'année (orphelines)
+        $em->createQuery('DELETE FROM App\Entity\PreviousYearRegularization p WHERE p.schoolYear = :year OR p.schoolYear IS NULL')
            ->setParameter('year', $currentYear)
            ->execute();
 
@@ -118,8 +120,8 @@ class RegularizationController extends AbstractController
         $movement->setDate(new \DateTime());
         $movement->setStudent($regularization->getStudent());
         
-        if ($schoolYearIri) {
-            $idYear = (int) filter_var($schoolYearIri, FILTER_SANITIZE_NUMBER_INT);
+        if ($schoolYearIri && str_contains($schoolYearIri, '/')) {
+            $idYear = (int) basename($schoolYearIri);
             $schoolYear = $em->getRepository(SchoolYear::class)->find($idYear);
             $movement->setSchoolYear($schoolYear);
         }
