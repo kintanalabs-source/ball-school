@@ -35,22 +35,31 @@ class RegularizationController extends AbstractController
         }
 
         // On cherche l'année qui s'est terminée juste avant le début de l'actuelle
-        $previousYear = $em->getRepository(SchoolYear::class)->createQueryBuilder('s')
-            ->where('s.startDate < :start')
-            ->setParameter('start', $currentYear->getStartDate())
-            ->orderBy('s.startDate', 'DESC')
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
+        // Correction : Si l'ID est 1, on considère qu'il n'y a pas de passé (ID 0 n'existe pas)
+        $previousYear = null;
+        if ($currentYearId > 1) {
+            $previousYear = $em->getRepository(SchoolYear::class)->createQueryBuilder('s')
+                ->where('s.startDate < :start')
+                ->setParameter('start', $currentYear->getStartDate())
+                ->orderBy('s.startDate', 'DESC')
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+        }
 
-        // 2. NETTOYAGE PROFOND
-        // Supprimer les régularisations liées à l'année actuelle OU celles qui n'ont pas d'année (orphelines)
-        $em->createQuery('DELETE FROM App\Entity\PreviousYearRegularization p WHERE p.schoolYear = :year OR p.schoolYear IS NULL')
-           ->setParameter('year', $currentYear)
-           ->execute();
+        // 2. NETTOYAGE PROFOND: Supprimer TOUTES les régularisations existantes
+        // pour s'assurer que seules les régularisations de l'année précédente sont présentes.
+        // Cela évite les confusions si des régularisations d'autres années traînent.
+        $em->createQuery('DELETE FROM App\Entity\PreviousYearRegularization p')->execute();
 
         if (!$previousYear) {
-            return new JsonResponse(['message' => 'Aucune année précédente trouvée. La liste a été vidée.'], 200);
+            // Retourner une structure complète pour que React puisse mettre à jour son état (count: 0)
+            return new JsonResponse([
+                'message' => 'Première année scolaire (ID ' . $currentYearId . ') : aucune dette précédente possible.',
+                'count' => 0,
+                'currentYearId' => $currentYear->getId(),
+                'previousYearId' => null
+            ], 200);
         }
 
         // 3. Chercher tous les écolages (type ecolage) impayés de l'année précédente
@@ -80,13 +89,18 @@ class RegularizationController extends AbstractController
             $reg->setStudent($debt['student']);
             $reg->setUnpaidMonths(implode(', ', $debt['months']));
             $reg->setTotalRemaining($debt['total']);
-            $reg->setSchoolYear($currentYear); // On lie la dette à l'année active
+            $reg->setSchoolYear($previousYear); // FIX: On lie à l'ID de l'année précédente !
             $em->persist($reg);
         }
 
         $em->flush();
 
-        return new JsonResponse(['message' => count($debtsByStudent) . ' dossiers d\'impayés trouvés pour l\'année ' . $previousYear->getLabel()]);
+        return new JsonResponse([
+            'message' => count($debtsByStudent) . ' dossiers d\'impayés trouvés pour l\'année ' . $previousYear->getLabel(),
+            'count' => count($debtsByStudent),
+            'currentYearId' => $currentYear->getId(),
+            'previousYearId' => $previousYear->getId() // C'est ici qu'on retourne l'ID de l'année précédente
+        ]);
     }
 
     #[Route('/api/regularizations/{id}/pay', name: 'api_regularization_pay', methods: ['POST'])]
