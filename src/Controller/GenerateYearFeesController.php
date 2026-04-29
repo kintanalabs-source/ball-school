@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Fee;
 use App\Entity\Student;
+use App\Entity\SchoolYear;
 use App\Repository\FeeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,10 +21,17 @@ class GenerateYearFeesController extends AbstractController
 
     public function __invoke(Student $student, FeeRepository $feeRepository, EntityManagerInterface $entityManager): Student
     {
-        $currentYear = (int) date('Y');
+        // Trouver l'année scolaire active (celle qui englobe la date d'aujourd'hui)
+        $schoolYear = $entityManager->getRepository(SchoolYear::class)->createQueryBuilder('s')
+            ->where('s.startDate <= :now')
+            ->andWhere('s.endDate >= :now')
+            ->setParameter('now', new \DateTime())
+            ->getQuery()
+            ->getOneOrNullResult();
         
         foreach ($this->months as $index => $monthName) {
             // Logic for split year (Sept-Dec vs Jan-Jun)
+            $currentYear = (int) date('Y');
             $year = ($index < 4) ? $currentYear : $currentYear + 1;
 
             $existing = $feeRepository->findOneBy([
@@ -38,6 +46,7 @@ class GenerateYearFeesController extends AbstractController
                 $fee->setStudent($student);
                 $fee->setMonth($monthName);
                 $fee->setYear($year);
+                $fee->setSchoolYear($schoolYear); // Liaison cruciale
                 
                 $price = $student->getClasse() ? $student->getClasse()->getTuitionPrice() : 50000;
                 $fee->setAmount($price);
