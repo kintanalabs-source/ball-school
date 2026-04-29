@@ -34,23 +34,26 @@ class RegularizationController extends AbstractController
             return new JsonResponse(['message' => 'Année scolaire introuvable'], 404);
         }
 
-        // On cherche l'année qui s'est terminée juste avant le début de l'actuelle
-        // Correction : Si l'ID est 1, on considère qu'il n'y a pas de passé (ID 0 n'existe pas)
-        $previousYear = null;
-        if ($currentYearId > 1) {
-            $previousYear = $em->getRepository(SchoolYear::class)->createQueryBuilder('s')
-                ->where('s.startDate < :start')
-                ->setParameter('start', $currentYear->getStartDate())
-                ->orderBy('s.startDate', 'DESC')
-                ->setMaxResults(1)
-                ->getQuery()
-                ->getOneOrNullResult();
-        }
+        // Identification de l'année précédente basée sur la date de début
+        $previousYear = $em->getRepository(SchoolYear::class)->createQueryBuilder('s')
+            ->where('s.startDate < :start')
+            ->setParameter('start', $currentYear->getStartDate())
+            ->orderBy('s.startDate', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
 
-        // 2. NETTOYAGE PROFOND: Supprimer TOUTES les régularisations existantes
-        // pour s'assurer que seules les régularisations de l'année précédente sont présentes.
-        // Cela évite les confusions si des régularisations d'autres années traînent.
-        $em->createQuery('DELETE FROM App\Entity\PreviousYearRegularization p')->execute();
+        // 2. NETTOYAGE : On supprime tout ce qui n'appartient pas à l'année précédente identifiée
+        $allExisting = $em->getRepository(PreviousYearRegularization::class)->findAll();
+        $regsByStudent = [];
+        foreach ($allExisting as $r) {
+            if (!$previousYear || !$r->getSchoolYear() || $r->getSchoolYear()->getId() !== $previousYear->getId()) {
+                $em->remove($r);
+            } else {
+                $regsByStudent[$r->getStudent()->getId()] = $r;
+            }
+        }
+        $em->flush(); // On valide le nettoyage avant de recréer
 
         if (!$previousYear) {
             // Retourner une structure complète pour que React puisse mettre à jour son état (count: 0)
@@ -84,12 +87,23 @@ class RegularizationController extends AbstractController
             $debtsByStudent[$studentId]['total'] += $fee->getAmount();
         }
 
+        $processedStudentIds = [];
         foreach ($debtsByStudent as $debt) {
-            $reg = new PreviousYearRegularization();
+            $studentId = $debt['student']->getId();
+            $processedStudentIds[] = $studentId;
+            
+            $reg = $regsByStudent[$studentId] ?? new PreviousYearRegularization();
+            
             $reg->setStudent($debt['student']);
             $reg->setUnpaidMonths(implode(', ', $debt['months']));
-            $reg->setTotalRemaining($debt['total']);
             $reg->setSchoolYear($previousYear); // FIX: On lie à l'ID de l'année précédente !
+            
+            // On ne met à jour le montant que si c'est une nouvelle fiche 
+            // ou si la dette calculée est inférieure (ex: un écolage a été supprimé)
+            if (!$reg->getId() || $debt['total'] < $reg->getTotalRemaining()) {
+                $reg->setTotalRemaining($debt['total']);
+            }
+
             $em->persist($reg);
         }
 
@@ -123,9 +137,36 @@ class RegularizationController extends AbstractController
         }
 
         // 1. Mise à jour du solde restant (recalcul automatique)
-        $regularization->setTotalRemaining($regularization->getTotalRemaining() - $amount);
+        $newRemaining = $regularization->getTotalRemaining() - $amount;
+        $regularization->setTotalRemaining($newRemaining);
 
-        // 2. Création de l'entrée comptable avec le libellé imposé
+        // Si la dette est totalement payée, on supprime la fiche de régularisation
+        if ($newRemaining <= 0.01) {
+            $em->remove($regularization);
+        }
+
+        // 2. IMPORTANT : Marquer les écolages originaux comme payés dans la table Fee
+        // On cherche les écolages impayés de cet élève pour cette année-là
+        $unpaidFees = $em->getRepository(Fee::class)->findBy([
+            'student' => $regularization->getStudent(),
+            'schoolYear' => $regularization->getSchoolYear(),
+            'isPaid' => false,
+            'type' => 'ecolage'
+        ], ['id' => 'ASC']); // On commence par les plus anciens
+
+        $amountToApply = $amount;
+        foreach ($unpaidFees as $fee) {
+            if ($amountToApply >= $fee->getAmount() - 0.01) {
+                $fee->setIsPaid(true);
+                $fee->setPaymentDate(new \DateTime());
+                $amountToApply -= $fee->getAmount();
+            } else {
+                // Montant restant insuffisant pour couvrir le mois suivant en entier
+                break;
+            }
+        }
+
+        // 3. Création de l'entrée comptable avec le libellé imposé
         $movement = new AccountingMovement();
         $movement->setLabel("Régularisation d’écolage de l’année précédente");
         $movement->setAmount($amount);

@@ -114,7 +114,10 @@ const Accounting = () => {
           {!selectedYear?.isClosed && (
             <button
               onClick={handleCloseAccount}
-              className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
+              disabled={selectedYear?.finalBalance > 0}
+              className={`flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg font-bold transition-colors shadow-lg shadow-red-200 ${
+                selectedYear?.finalBalance > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-700'
+              }`}
             >
               <Lock size={18} />
               <span className="whitespace-nowrap">Fermer le compte</span>
