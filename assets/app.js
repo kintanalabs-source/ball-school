@@ -5,8 +5,8 @@ import './styles/app.css';
 import { LoadingProvider, useLoading } from './utils/loading';
 import LoadingOverlay from './components/LoadingOverlay';
 import { setLoadingCallbacks } from './utils/api';
-import Layout from './components/Layout';
 import Welcome from './pages/Welcome';
+import AdminLayout from './components/AdminLayout'; // Import AdminLayout
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -17,6 +17,7 @@ import Fees from './pages/Fees';
 import News from './pages/News';
 import Accounting from './pages/Accounting';
 import Regularization from './pages/Regularization';
+import Users from './pages/Users'; // Import Users
 
 // Composant interne qui enregistre les callbacks de loading
 const LoadingManager = () => {
@@ -43,17 +44,20 @@ const App = () => {
                     <Route path="/" element={<Welcome />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
-
                     {/* Page de sélection d'année sans sidebar pour un effet "Portail" */}
                     <Route path="/admin/school-years" element={<SchoolYears />} />
-                    {/* Les autres routes sont enveloppées individuellement par le Layout pour afficher la sidebar */}
-                    <Route path="/admin/dashboard" element={<Layout><Dashboard /></Layout>} />
-                    <Route path="/admin/students" element={<Layout><Students /></Layout>} />
-                    <Route path="/admin/classes" element={<Layout><Classes /></Layout>} />
-                    <Route path="/admin/fees" element={<Layout><Fees /></Layout>} />
-                    <Route path="/admin/news" element={<Layout><News /></Layout>} />
-                    <Route path="/admin/regularization" element={<Layout><Regularization /></Layout>} />
-                    <Route path="/admin/accounting" element={<Layout><Accounting /></Layout>} />
+
+                    {/* Routes d'administration avec AdminLayout */}
+                    <Route path="/admin" element={<AdminLayout />}>
+                        <Route path="dashboard" element={<Dashboard />} />
+                        <Route path="students" element={<Students />} />
+                        <Route path="classes" element={<Classes />} />
+                        <Route path="fees" element={<Fees />} />
+                        <Route path="news" element={<News />} />
+                        <Route path="regularization" element={<Regularization />} />
+                        <Route path="accounting" element={<Accounting />} />
+                        <Route path="users" element={<Users />} /> {/* La route pour le composant Users */}
+                    </Route>
                 </Routes>
             </Router>
         </LoadingProvider>

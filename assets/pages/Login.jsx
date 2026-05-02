@@ -20,11 +20,21 @@ const Login = () => {
 
     try {
       // Login stateful avec cookies de session
-      await axios.post('/api/login', 
+      const response = await axios.post('/api/login', 
         { email, password },
         { withCredentials: true }
       );
       
+      const { status, roles } = response.data;
+
+      // Les administrateurs passent toujours, les autres doivent être acceptés
+      const isAdmin = roles?.includes('ROLE_ADMIN');
+      
+      if (!isAdmin && status !== 'accepted') {
+        setError('Connexion refusée. Votre compte n\'est pas encore activé.');
+        setIsLoading(false);
+        return;
+      }
       // Connexion réussie - la session Symfony est automatiquement créée
       navigate('/admin/school-years');
     } catch (err) {
