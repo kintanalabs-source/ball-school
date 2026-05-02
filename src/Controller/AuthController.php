@@ -35,6 +35,7 @@ class AuthController extends AbstractController
         $user = new User();
         $user->setEmail($data['email']);
         $user->setRoles(['ROLE_USER']);
+        $user->setStatus('refused');
         
         // Hachage du mot de passe pour la sécurité
         $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
@@ -59,6 +60,7 @@ class AuthController extends AbstractController
             'message' => 'Connexion réussie',
             'user' => $user->getUserIdentifier(),
             'roles' => $user->getRoles(),
+            'status' => $user->getStatus(),
         ]);
     }
 }

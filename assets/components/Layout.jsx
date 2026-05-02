@@ -23,6 +23,7 @@ const Layout = ({ children }) => {
     { name: 'Actualités', path: '/admin/news', icon: Newspaper },
     { name: 'Régularisation', path: '/admin/regularization', icon: History },
     { name: 'Comptabilité', path: '/admin/accounting', icon: Calculator },
+    { name: 'Utilisateurs', path: '/admin/users', icon: Users },
   ];
 
   return (

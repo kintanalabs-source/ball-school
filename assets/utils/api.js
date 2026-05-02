@@ -143,4 +143,11 @@ export const RegularizationService = {
   pay: (id, data) => api.post(`/regularizations/${id}/pay`, data),
 };
 
+export const AdminUserService = {
+  getAll: () => api.get('/admin/users'),
+  create: (data) => api.post('/admin/users', data),
+  updateStatus: (id, status) => api.post(`/admin/users/${id}/status`, { status }),
+  delete: (id) => api.delete(`/admin/users/${id}`),
+};
+
 export default api;
