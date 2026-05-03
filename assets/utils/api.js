@@ -130,6 +130,16 @@ export const SchoolYearService = {
 export const NewsService = {
   getAll: (params) => api.get('/news', { params }),
   create: (data) => api.post('/news', data),
+  update: (idOrIri, data) => {
+    // Si c'est une IRI complète (/api/news/1), on enlève le préfixe /api car baseURL le gère déjà
+    const url = typeof idOrIri === 'string' && idOrIri.startsWith('/api/') 
+      ? idOrIri.replace('/api', '') 
+      : `/news/${idOrIri}`;
+    return api.patch(url, data, {
+      headers: { 'Content-Type': 'application/merge-patch+json' }
+    });
+  },
+  delete: (id) => api.delete(`/news/${id}`),
 };
 
 export const AccountingService = {
