@@ -36,13 +36,42 @@ const News = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    NewsService.create(formData)
+    
+    const action = isEditing 
+      ? NewsService.update(selectedNews.id, formData) 
+      : NewsService.create(formData);
+
+    action
       .then(() => {
         setIsModalOpen(false);
+        setIsEditing(false);
+        setSelectedNews(null);
         setFormData({ title: '', content: '', category: config.categories.news[0], image: '' });
         loadNews();
       })
       .catch(err => console.error(err));
+  };
+
+  const openEdit = (item) => {
+    setSelectedNews(item);
+    setFormData({
+      title: item.title,
+      content: item.content,
+      category: item.category,
+      image: item.image || ''
+    });
+    setIsEditing(true);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm("Voulez-vous vraiment supprimer cette actualité ?")) {
+      NewsService.delete(id)
+        .then(() => {
+          loadNews();
+        })
+        .catch(err => console.error(err));
+    }
   };
 
   if (loading && news.length === 0) return <div className="p-8 text-center text-gray-500">Chargement...</div>;
@@ -52,7 +81,15 @@ const News = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold text-gray-800">Actualités & Programmes</h2>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setIsEditing(false);
+            setSelectedNews(null);
+            setFormData({ 
+              title: '', content: '', 
+              category: config.categories.news[0], image: '' 
+            });
+            setIsModalOpen(true);
+          }}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
         >
           <Plus size={20} />
