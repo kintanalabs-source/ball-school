@@ -165,7 +165,7 @@ const Accounting = () => {
             <tr>
               <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Date</th>
               <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Libellé</th>
-              <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Élève</th>
+              {/* <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Élève</th> */}
               <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Catégorie</th>
               <th className="px-6 py-4 text-sm font-bold text-gray-500 uppercase">Montant</th>
             </tr>
@@ -175,7 +175,7 @@ const Accounting = () => {
               <tr key={m.id} className="hover:bg-gray-50/50">
                 <td className="px-6 py-4 text-gray-500 text-sm">{new Date(m.date).toLocaleDateString()}</td>
                 <td className="px-6 py-4 font-medium text-gray-800">{m.label}</td>
-                <td className="px-6 py-4 text-gray-600 text-sm">{m.student ? `${m.student.firstName} ${m.student.lastName}` : 'N/A'}</td>
+                {/* <td className="px-6 py-4 text-gray-600 text-sm">{m.student ? `${m.student.firstName} ${m.student.lastName}` : 'N/A'}</td> */}
                 <td className="px-6 py-4">
                   <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-bold uppercase tracking-wider">
                     {m.category}
