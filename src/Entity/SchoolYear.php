@@ -63,10 +63,17 @@ class SchoolYear
     #[ORM\OneToMany(targetEntity: Student::class, mappedBy: 'schoolYear')]
     private Collection $students;
 
+    /**
+     * @var Collection<int, Classe>
+     */
+    #[ORM\OneToMany(targetEntity: Classe::class, mappedBy: 'schoolYear')]
+    private Collection $classes;
+
     public function __construct()
     {
         $this->startDate = new \DateTime();
         $this->students = new ArrayCollection();
+        $this->classes = new ArrayCollection();
     }
 
     public function getId(): ?int { return $this->id; }
@@ -113,6 +120,36 @@ class SchoolYear
             // set the owning side to null (unless already changed)
             if ($student->getSchoolYear() === $this) {
                 $student->setSchoolYear(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Classe>
+     */
+    public function getClasses(): Collection
+    {
+        return $this->classes;
+    }
+
+    public function addClass(Classe $class): self
+    {
+        if (!$this->classes->contains($class)) {
+            $this->classes->add($class);
+            $class->setSchoolYear($this);
+        }
+
+        return $this;
+    }
+
+    public function removeClass(Classe $class): self
+    {
+        if ($this->classes->removeElement($class)) {
+            // set the owning side to null (unless already changed)
+            if ($class->getSchoolYear() === $this) {
+                $class->setSchoolYear(null);
             }
         }
 
